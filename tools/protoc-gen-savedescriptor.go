@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -26,7 +27,19 @@ func main() {
 		kv := strings.Split(group, "=")
 		if len(kv) > 1 {
 		}
-
+	}
+	for _, fdp := range req.GetProtoFile() {
+		fileName := fmt.Sprintf("%s.fdp", fdp.GetName())
+		fdpEncoded, err := proto.Marshal(fdp)
+		if err != nil {
+			panic(err)
+		}
+		fdpEncodedString := string(fdpEncoded)
+		f := &pluginpb.CodeGeneratorResponse_File{
+			Name:    &fileName,
+			Content: &fdpEncodedString,
+		}
+		resp.File = append(resp.File, f)
 	}
 	marshalled, err := proto.Marshal(resp)
 	if err != nil {
