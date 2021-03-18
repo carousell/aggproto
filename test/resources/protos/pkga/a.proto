@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package pkga;
+
+message AMessage {
+    message ASubMessage {
+        string field_one = 1;
+    }
+    enum AEnum {
+        unknown = 0;
+        known_one = 1;
+    }
+    string field_one = 1;
+    int64 field_two = 2;
+    ASubMessage field_three = 3;
+    AEnum field_four = 4;
+
+    oneof field_oneof {
+        string field_five = 5;
+        int32 field_six = 6;
+    }
+    repeated ASubMessage field_seven = 7;
+}
+message AReq {
+    string name = 1;
+}
+
+service ASvc {
+    rpc A (AReq) returns (AMessage) {
+    }
+}
