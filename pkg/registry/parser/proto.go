@@ -7,7 +7,7 @@ import (
 
 type protoContainer struct {
 	pb *descriptorpb.FileDescriptorProto
-	r registry.Registry
+	r  registry.Registry
 }
 
 func (pc *protoContainer) messages() []registry.Message {
@@ -18,15 +18,21 @@ func (pc *protoContainer) messages() []registry.Message {
 	return msgs
 }
 
-func (pc *protoContainer) services() []*ServiceContainer {
-	var svcs []*ServiceContainer
-	for _, svcType := range pc.pb.Service {
-		svcs = append(svcs, &ServiceContainer{
-			PackageName: pc.pb.GetPackage(),
-			ServiceName: svcType.GetName(),
-			scvType:     svcType,
-			parent:      pc,
-		})
+func (pc *protoContainer) populateMessageFields() {
+	for _, msgType := range pc.pb.GetMessageType() {
+		populateMessageField(pc.r, pc.pb.GetPackage(), msgType)
 	}
-	return svcs
 }
+
+//func (pc *protoContainer) services() []*ServiceContainer {
+//	var svcs []*ServiceContainer
+//	for _, svcType := range pc.pb.Service {
+//		svcs = append(svcs, &ServiceContainer{
+//			PackageName: pc.pb.GetPackage(),
+//			ServiceName: svcType.GetName(),
+//			scvType:     svcType,
+//			parent:      pc,
+//		})
+//	}
+//	return svcs
+//}

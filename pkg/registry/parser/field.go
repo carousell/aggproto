@@ -1,6 +1,9 @@
 package parser
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/carousell/aggproto/pkg/registry"
 	"google.golang.org/protobuf/types/descriptorpb"
 )
@@ -45,6 +48,15 @@ func parseField(r registry.Registry, msgContext *messageContainer, fieldDescript
 	switch fieldDescriptorProto.GetType() {
 	case descriptorpb.FieldDescriptorProto_TYPE_MESSAGE:
 		field.fieldType = registry.FieldTypeMessage
+		tn := fieldDescriptorProto.GetTypeName()
+		if strings.HasPrefix(tn, ".") {
+			tn = strings.Replace(tn, ".", "", 1)
+		}
+		msgs := r.ListMessages(registry.LMOWithFullName(tn))
+		if len(msgs) != 1 {
+			panic(fmt.Sprintf("message not found %s", tn))
+		}
+		field.message = msgs[0]
 	case descriptorpb.FieldDescriptorProto_TYPE_STRING:
 		field.fieldType = registry.FieldTypeString
 	case descriptorpb.FieldDescriptorProto_TYPE_BOOL:
@@ -59,5 +71,5 @@ func parseField(r registry.Registry, msgContext *messageContainer, fieldDescript
 	default:
 	}
 
-
+	return field
 }

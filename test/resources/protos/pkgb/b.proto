@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package pkgb;
+
+message BMessage {
+    message BSubMessage {
+        string field_one = 1;
+    }
+    string field_one = 1;
+    BSubMessage field_three = 3;
+    repeated BSubMessage field_seven = 7;
+}
+message BReq {
+    string name = 1;
+}
+
+service BSvc {
+    rpc B (BReq) returns (BMessage) {
+    }
+}

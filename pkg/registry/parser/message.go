@@ -15,6 +15,10 @@ type messageContainer struct {
 	fields      []registry.Field
 }
 
+func (m *messageContainer) FullName() string {
+	return fmt.Sprintf("%s.%s", m.packageName, m.name)
+}
+
 func (m *messageContainer) Parent() registry.Message {
 	if m.parent != nil {
 		return m.parent
@@ -49,15 +53,28 @@ func parseMessage(r registry.Registry, packageName string, msgType *descriptorpb
 	var definitions []registry.Message
 	for _, dp := range msgType.NestedType {
 		subMsg := parseMessage(r, fmt.Sprintf("%s.%s", packageName, msgType.GetName()), dp)
+		subMsg.parent = msg
 		if subMsg != nil {
 			definitions = append(definitions, subMsg)
 		}
 	}
+	msg.definitions = definitions
+	return msg
+}
+func populateMessageField(r registry.Registry, packageName string, msgType *descriptorpb.DescriptorProto) {
+	msgName := fmt.Sprintf("%s.%s", packageName, msgType.GetName())
+	msgs := r.ListMessages(registry.LMOWithFullName(msgName))
+	if len(msgs) != 1 {
+		panic(fmt.Sprintf("message not found %s", msgName))
+	}
+	msg := msgs[0].(*messageContainer)
 	var fields []registry.Field
 	for _, ft := range msgType.Field {
 		fields = append(fields, parseField(r, msg, ft))
-
 	}
-	msg.definitions = definitions
-	return msg
+	msg.fields = fields
+
+	for _, dp := range msgType.NestedType {
+		populateMessageField(r, msgName, dp)
+	}
 }
