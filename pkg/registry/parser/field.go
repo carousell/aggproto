@@ -8,46 +8,46 @@ import (
 	"google.golang.org/protobuf/types/descriptorpb"
 )
 
-type messageField struct {
-	fieldType registry.FieldType
-	name      string
-	message   registry.Message
-	context   registry.Message
-	repeated  bool
+type MessageField struct {
+	FieldType        registry.FieldType
+	FieldName        string
+	FieldMessageType registry.Message
+	FieldContext     registry.Message
+	RepeatedField    bool
 }
 
-func (m *messageField) Type() registry.FieldType {
-	return m.fieldType
+func (m *MessageField) Type() registry.FieldType {
+	return m.FieldType
 }
 
-func (m *messageField) Name() string {
-	return m.name
+func (m *MessageField) Name() string {
+	return m.FieldName
 }
 
-func (m *messageField) Message() registry.Message {
-	return m.message
+func (m *MessageField) Message() registry.Message {
+	return m.FieldMessageType
 }
 
-func (m *messageField) Context() registry.Message {
-	return m.context
+func (m *MessageField) Context() registry.Message {
+	return m.FieldContext
 }
 
-func (m *messageField) Repeated() bool {
-	return m.repeated
+func (m *MessageField) Repeated() bool {
+	return m.RepeatedField
 }
 
-func parseField(r registry.Registry, msgContext *messageContainer, fieldDescriptorProto *descriptorpb.FieldDescriptorProto) registry.Field {
+func parseField(r registry.Registry, msgContext *MessageContainer, fieldDescriptorProto *descriptorpb.FieldDescriptorProto) registry.Field {
 	if fieldDescriptorProto.OneofIndex != nil {
 		// TODO
 		panic("unhandled oneof")
 	}
-	field := &messageField{
-		context: msgContext,
-		name:    fieldDescriptorProto.GetName(),
+	field := &MessageField{
+		FieldContext: msgContext,
+		FieldName:    fieldDescriptorProto.GetName(),
 	}
 	switch fieldDescriptorProto.GetType() {
 	case descriptorpb.FieldDescriptorProto_TYPE_MESSAGE:
-		field.fieldType = registry.FieldTypeMessage
+		field.FieldType = registry.FieldTypeMessage
 		tn := fieldDescriptorProto.GetTypeName()
 		if strings.HasPrefix(tn, ".") {
 			tn = strings.Replace(tn, ".", "", 1)
@@ -56,18 +56,18 @@ func parseField(r registry.Registry, msgContext *messageContainer, fieldDescript
 		if len(msgs) != 1 {
 			panic(fmt.Sprintf("message not found %s", tn))
 		}
-		field.message = msgs[0]
+		field.FieldMessageType = msgs[0]
 	case descriptorpb.FieldDescriptorProto_TYPE_STRING:
-		field.fieldType = registry.FieldTypeString
+		field.FieldType = registry.FieldTypeString
 	case descriptorpb.FieldDescriptorProto_TYPE_BOOL:
-		field.fieldType = registry.FieldTypeBool
+		field.FieldType = registry.FieldTypeBool
 	default:
 		// TODO
 		panic("unhandled type")
 	}
 	switch fieldDescriptorProto.GetLabel() {
 	case descriptorpb.FieldDescriptorProto_LABEL_REPEATED:
-		field.repeated = true
+		field.RepeatedField = true
 	default:
 	}
 

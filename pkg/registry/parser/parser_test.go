@@ -11,60 +11,60 @@ import (
 	"google.golang.org/protobuf/types/descriptorpb"
 )
 
-var bSubMessage = &messageContainer{
-	packageName: "pkgb.BMessage",
-	name:        "BSubMessage",
-	fields: []registry2.Field{
-		&messageField{
-			name:      "field_one",
-			fieldType: registry2.FieldTypeString,
+var bSubMessage = &MessageContainer{
+	PackageName: "pkgb.BMessage",
+	MessageName: "BSubMessage",
+	MessageFields: []registry2.Field{
+		&MessageField{
+			FieldName: "field_one",
+			FieldType: registry2.FieldTypeString,
 		},
 	},
 }
-var bMessage = &messageContainer{
-	packageName: "pkgb",
-	name:        "BMessage",
-	definitions: []registry2.Message{
+var bMessage = &MessageContainer{
+	PackageName: "pkgb",
+	MessageName: "BMessage",
+	MessageDefinitions: []registry2.Message{
 		bSubMessage,
 	},
-	fields: []registry2.Field{
-		&messageField{
-			name:      "field_one",
-			fieldType: registry2.FieldTypeString,
+	MessageFields: []registry2.Field{
+		&MessageField{
+			FieldName: "field_one",
+			FieldType: registry2.FieldTypeString,
 		},
-		&messageField{
-			name:      "field_three",
-			fieldType: registry2.FieldTypeMessage,
-			message:   bSubMessage,
+		&MessageField{
+			FieldName:        "field_three",
+			FieldType:        registry2.FieldTypeMessage,
+			FieldMessageType: bSubMessage,
 		},
-		&messageField{
-			name:      "field_seven",
-			fieldType: registry2.FieldTypeMessage,
-			repeated:  true,
-			message:   bSubMessage,
-		},
-	},
-}
-
-var bReq = &messageContainer{
-	name:        "BReq",
-	packageName: "pkgb",
-	fields: []registry2.Field{
-		&messageField{
-			name:      "name",
-			fieldType: registry2.FieldTypeString,
+		&MessageField{
+			FieldName:        "field_seven",
+			FieldType:        registry2.FieldTypeMessage,
+			RepeatedField:    true,
+			FieldMessageType: bSubMessage,
 		},
 	},
 }
 
-func stitchMessage(mc *messageContainer) {
-	for _, f := range mc.fields {
-		f := f.(*messageField)
-		f.context = mc
+var bReq = &MessageContainer{
+	MessageName: "BReq",
+	PackageName: "pkgb",
+	MessageFields: []registry2.Field{
+		&MessageField{
+			FieldName: "name",
+			FieldType: registry2.FieldTypeString,
+		},
+	},
+}
+
+func stitchMessage(mc *MessageContainer) {
+	for _, f := range mc.MessageFields {
+		f := f.(*MessageField)
+		f.FieldContext = mc
 	}
-	for _, d := range mc.definitions {
-		d := d.(*messageContainer)
-		d.parent = mc
+	for _, d := range mc.MessageDefinitions {
+		d := d.(*MessageContainer)
+		d.MessageParent = mc
 		stitchMessage(d)
 	}
 }

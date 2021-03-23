@@ -1,9 +1,12 @@
 package registry
 
+import "strings"
+
 type mockRegistry struct {
 	onAddMessages   func(...Message)
 	onAddOperations func(...UnaryOperation)
 	cache           map[string]Message
+	onListMessage   []func(options listMessageOptions) ([]Message, bool)
 }
 
 func Mock() *mockRegistry {
@@ -15,6 +18,15 @@ func (mr *mockRegistry) OnAddMessages(fn func(...Message)) *mockRegistry {
 }
 func (mr *mockRegistry) OnAddOperations(fn func(...UnaryOperation)) *mockRegistry {
 	mr.onAddOperations = fn
+	return mr
+}
+func (mr *mockRegistry) OnListMessageMatchPrefix(prefix string, ret []Message) *mockRegistry {
+	mr.onListMessage = append(mr.onListMessage, func(options listMessageOptions) (messages []Message, b bool) {
+		if options.prefixMatch != nil && strings.HasPrefix(*options.prefixMatch, prefix) {
+			return ret, true
+		}
+		return nil, false
+	})
 	return mr
 }
 func (mr *mockRegistry) addAll(msgs ...Message) {
@@ -41,6 +53,14 @@ func (mr *mockRegistry) ListMessages(options ...ListMessageOption) []Message {
 	lmo := listMessageOptions{}
 	for _, op := range options {
 		lmo = op(lmo)
+	}
+	if mr.onListMessage != nil {
+		for _, fn := range mr.onListMessage {
+			ret, handled := fn(lmo)
+			if handled {
+				return ret
+			}
+		}
 	}
 	if lmo.exactFullName != nil {
 		if msg, ok := mr.cache[*lmo.exactFullName]; ok {

@@ -24,6 +24,7 @@ func (m *msgResolver) Resolve(api dsl.ApiDescriptor, fds []dsl.FieldDescriptor) 
 		case dsl.PrimitiveFieldDescriptor:
 			adaptorUnits = append(adaptorUnits, makeStaticPrimitiveAdaptorUnit(ofd, ifd))
 		case *dsl.NamespacedMessageFieldDescriptor:
+			adaptorUnits = append(adaptorUnits, makeNamespacedMessageAdaptorUnit(m.r, ofd, ifd))
 		default:
 			panic("unsupported input field descriptor")
 		}
