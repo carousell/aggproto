@@ -9,6 +9,7 @@ import (
 )
 
 func Test_msgResolver_Resolve(t *testing.T) {
+	apiDesc := dsl.GetApiDescriptor("test", "simple", 1)
 	type fields struct {
 		r registry.Registry
 	}
@@ -33,13 +34,13 @@ func Test_msgResolver_Resolve(t *testing.T) {
 			want: &adaptorContext{
 				adaptorUnits: []adaptorUnit{
 					&nestedAdaptorUnit{
-						name: "a",
+						fieldName: "a",
 						nestedUnit: []adaptorUnit{
 							&nestedAdaptorUnit{
-								name: "b",
+								fieldName: "b",
 								nestedUnit: []adaptorUnit{
 									&nestedAdaptorUnit{
-										name: "c",
+										fieldName: "c",
 										nestedUnit: []adaptorUnit{
 											&staticPrimitiveAdaptorUnit{
 												fieldName:   "field_1",
@@ -52,7 +53,7 @@ func Test_msgResolver_Resolve(t *testing.T) {
 										},
 									},
 									&nestedAdaptorUnit{
-										name: "d",
+										fieldName: "d",
 										nestedUnit: []adaptorUnit{
 											&staticPrimitiveAdaptorUnit{
 												fieldName:   "field_1",
@@ -73,7 +74,7 @@ func Test_msgResolver_Resolve(t *testing.T) {
 			m := &msgResolver{
 				r: tt.fields.r,
 			}
-			if got := m.Resolve(tt.args.fds); !reflect.DeepEqual(got, tt.want) {
+			if got := m.Resolve(apiDesc, tt.args.fds); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Resolve() = %v, want %v", got, tt.want)
 			}
 		})

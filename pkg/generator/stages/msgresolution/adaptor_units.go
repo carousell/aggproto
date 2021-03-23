@@ -1,7 +1,17 @@
 package msgresolution
 
+import (
+	"fmt"
+
+	"github.com/carousell/aggproto/pkg/generator/printer"
+	"github.com/iancoleman/strcase"
+)
+
 type adaptorUnit interface {
 	isAdaptorUnit()
+	printProtoDefinitions(p printer.Printer, fieldIdx int)
+	printAsProtoField(p printer.Printer, idx int)
+	printAsAdaptorCode(p printer.Printer, referenceName string)
 }
 
 type adaptorUnits []adaptorUnit
@@ -27,18 +37,42 @@ func (au adaptorUnits) tryMerge() adaptorUnits {
 }
 
 type nestedAdaptorUnit struct {
-	name       string
+	fieldName  string
 	nestedUnit []adaptorUnit
 }
 
-func (nau *nestedAdaptorUnit) merge(other *nestedAdaptorUnit) bool {
-	if nau.name != other.name {
+func (n *nestedAdaptorUnit) printAsAdaptorCode(p printer.Printer, referenceName string) {
+	p.P(referenceName, ".", n.fieldName, " = &", strcase.ToCamel(n.fieldName), "Gen{}")
+	for _, au := range n.nestedUnit {
+		au.printAsAdaptorCode(p, fmt.Sprintf("%s.%s", referenceName, n.fieldName))
+	}
+}
+
+func (n *nestedAdaptorUnit) printAsProtoField(p printer.Printer, idx int) {
+	p.P(fmt.Sprintf("%sGen ", strcase.ToCamel(n.fieldName)), n.fieldName, " = ", idx, ";")
+}
+
+func (n *nestedAdaptorUnit) printProtoDefinitions(p printer.Printer, fieldIdx int) {
+	p.P("message ", fmt.Sprintf("%sGen", strcase.ToCamel(n.fieldName)), "{")
+	p.Tab()
+	for idx, au := range n.nestedUnit {
+		au.printProtoDefinitions(p, idx+1)
+	}
+	for idx, au := range n.nestedUnit {
+		au.printAsProtoField(p, idx+1)
+	}
+	p.UnTab()
+	p.P("}")
+}
+
+func (n *nestedAdaptorUnit) merge(other *nestedAdaptorUnit) bool {
+	if n.fieldName != other.fieldName {
 		return false
 	}
 onuLoop:
 	for _, onu := range other.nestedUnit {
 		if onu, ok := onu.(*nestedAdaptorUnit); ok {
-			for _, nu := range nau.nestedUnit {
+			for _, nu := range n.nestedUnit {
 				if nu, ok := nu.(*nestedAdaptorUnit); ok {
 					if nu.merge(onu) {
 						continue onuLoop
@@ -47,7 +81,10 @@ onuLoop:
 			}
 
 		}
-		nau.nestedUnit = append(nau.nestedUnit, onu)
+		n.nestedUnit = append(n.nestedUnit, onu)
 	}
 	return true
+}
+func (n *nestedAdaptorUnit) isAdaptorUnit() {
+	panic("Should never be called")
 }

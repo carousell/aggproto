@@ -5,16 +5,16 @@ import (
 	"strings"
 )
 
-type parse_fd struct {
+type parseFd struct {
 	input  InputFieldDescriptor
 	output OutputFieldDescriptor
 }
 
-func (p *parse_fd) Input() InputFieldDescriptor {
+func (p *parseFd) Input() InputFieldDescriptor {
 	return p.input
 }
 
-func (p *parse_fd) Output() OutputFieldDescriptor {
+func (p *parseFd) Output() OutputFieldDescriptor {
 	return p.output
 }
 
@@ -35,22 +35,22 @@ func parseOutputFields(fields ...string) []FieldDescriptor {
 		}
 		ofd := &NamespacedMessageFieldDescriptor{outputString}
 		if b, er := strconv.ParseBool(inputString); er == nil {
-			fds = append(fds, &parse_fd{output: ofd, input: &BoolValueFieldDescriptor{b}})
+			fds = append(fds, &parseFd{output: ofd, input: &BoolValueFieldDescriptor{b}})
 			continue
 		}
 		if i, er := strconv.ParseInt(inputString, 10, 64); er == nil {
-			fds = append(fds, &parse_fd{output: ofd, input: &IntValueFieldDescriptor{i}})
+			fds = append(fds, &parseFd{output: ofd, input: &IntValueFieldDescriptor{i}})
 			continue
 		}
 		if f, er := strconv.ParseFloat(inputString, 10); er == nil {
-			fds = append(fds, &parse_fd{output: ofd, input: &FloatValueFieldDescriptor{f}})
+			fds = append(fds, &parseFd{output: ofd, input: &FloatValueFieldDescriptor{f}})
 			continue
 		}
 		if strings.HasPrefix(inputString, "\"") && strings.HasSuffix(inputString, "\"") {
-			fds = append(fds, &parse_fd{output: ofd, input: &StringValueFieldDescriptor{Value: strings.Trim(inputString, "\"")}})
+			fds = append(fds, &parseFd{output: ofd, input: &StringValueFieldDescriptor{Value: strings.Trim(inputString, "\"")}})
 			continue
 		}
-		fds = append(fds, &parse_fd{output: ofd, input: &NamespacedMessageFieldDescriptor{NamespacedField: inputString}})
+		fds = append(fds, &parseFd{output: ofd, input: &NamespacedMessageFieldDescriptor{NamespacedField: inputString}})
 	}
 	return fds
 }

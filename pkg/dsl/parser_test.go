@@ -22,7 +22,7 @@ func Test_parseOutputFields(t *testing.T) {
 				},
 			},
 			want: []FieldDescriptor{
-				&parse_fd{
+				&parseFd{
 					output: &NamespacedMessageFieldDescriptor{NamespacedField: "pkg_a.a.f1"},
 					input:  &IntValueFieldDescriptor{Value: 42},
 				},
@@ -36,7 +36,7 @@ func Test_parseOutputFields(t *testing.T) {
 				},
 			},
 			want: []FieldDescriptor{
-				&parse_fd{
+				&parseFd{
 					output: &NamespacedMessageFieldDescriptor{NamespacedField: "pkg_a.a.f2"},
 					input:  &FloatValueFieldDescriptor{Value: 3.14},
 				},
@@ -50,7 +50,7 @@ func Test_parseOutputFields(t *testing.T) {
 				},
 			},
 			want: []FieldDescriptor{
-				&parse_fd{
+				&parseFd{
 					output: &NamespacedMessageFieldDescriptor{NamespacedField: "pkg_a.a.f3"},
 					input:  &StringValueFieldDescriptor{Value: "hello world"},
 				},
@@ -65,11 +65,11 @@ func Test_parseOutputFields(t *testing.T) {
 				},
 			},
 			want: []FieldDescriptor{
-				&parse_fd{
+				&parseFd{
 					output: &NamespacedMessageFieldDescriptor{NamespacedField: "pkg_a.a.f4"},
 					input:  &NamespacedMessageFieldDescriptor{NamespacedField: "pkg_a.entity1.field1"},
 				},
-				&parse_fd{
+				&parseFd{
 					output: &NamespacedMessageFieldDescriptor{NamespacedField: "pkg_a.a.f5"},
 					input:  &NamespacedMessageFieldDescriptor{NamespacedField: "pkg_a.a.f5"},
 				},
