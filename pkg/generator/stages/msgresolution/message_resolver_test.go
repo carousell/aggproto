@@ -1,12 +1,12 @@
 package msgresolution
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/carousell/aggproto/pkg/dsl"
 	"github.com/carousell/aggproto/pkg/registry"
 	"github.com/carousell/aggproto/pkg/registry/parser"
+	"github.com/go-test/deep"
 )
 
 var (
@@ -60,6 +60,9 @@ func stitchMessage(mc *parser.MessageContainer) {
 }
 
 func init() {
+	deep.CompareUnexportedFields = true
+	deep.NilMapsAreEmpty = true
+	deep.NilSlicesAreEmpty = true
 	stitchMessage(testBasicNestedEntityBMockMessage)
 	stitchMessage(testBasicNestedMockMessage)
 }
@@ -138,8 +141,8 @@ func Test_msgResolver_Resolve(t *testing.T) {
 				apiDescriptor: api,
 				adaptorUnits: []adaptorUnit{
 					&nestedAdaptorUnit{
-						fieldName:"pkg_a",
-						nestedUnit:[]adaptorUnit{
+						fieldName: "pkg_a",
+						nestedUnit: []adaptorUnit{
 							&nestedAdaptorUnit{
 								fieldName: "entity_a",
 								nestedUnit: []adaptorUnit{
@@ -149,10 +152,18 @@ func Test_msgResolver_Resolve(t *testing.T) {
 											&messageFieldAdaptorUnit{
 												fieldName:  "field_1",
 												underlying: testBasicNestedEntityBMockMessage.MessageFields[0],
+												fieldMessageDependencies: []fieldMessageDependency{
+													{"entity_a", testBasicNestedMockMessage},
+													{"entity_b_field_1", testBasicNestedEntityBMockMessage},
+												},
 											},
 											&messageFieldAdaptorUnit{
 												fieldName:  "field_2",
 												underlying: testBasicNestedEntityBMockMessage.MessageFields[1],
+												fieldMessageDependencies: []fieldMessageDependency{
+													{"entity_a", testBasicNestedMockMessage},
+													{"entity_b_field_1", testBasicNestedEntityBMockMessage},
+												},
 											},
 										},
 									},
@@ -182,7 +193,7 @@ func Test_msgResolver_Resolve(t *testing.T) {
 				adaptorUnits: []adaptorUnit{
 					&nestedAdaptorUnit{
 						fieldName: "pkg_a",
-						nestedUnit:[]adaptorUnit{
+						nestedUnit: []adaptorUnit{
 							&nestedAdaptorUnit{
 								fieldName: "entity_a",
 								nestedUnit: []adaptorUnit{
@@ -192,10 +203,17 @@ func Test_msgResolver_Resolve(t *testing.T) {
 											&messageFieldAdaptorUnit{
 												fieldName:  "field_1",
 												underlying: testBasicNestedEntityBMockMessage.MessageFields[0],
+												fieldMessageDependencies: []fieldMessageDependency{
+													{"entity_a", testBasicNestedMockMessage},
+													{"entity_b_field_1", testBasicNestedEntityBMockMessage},
+												},
 											},
 											&messageFieldAdaptorUnit{
 												fieldName:  "new_field_1",
 												underlying: testComposedNestedWithPrimitiveMock.MessageFields[0],
+												fieldMessageDependencies: []fieldMessageDependency{
+													{"entity_c", testComposedNestedWithPrimitiveMock},
+												},
 											},
 											&staticPrimitiveAdaptorUnit{
 												fieldName:   "new_field_2",
@@ -216,8 +234,9 @@ func Test_msgResolver_Resolve(t *testing.T) {
 			m := &msgResolver{
 				r: tt.fields.r,
 			}
-			if got := m.Resolve(api, tt.args.fds); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Resolve() = %v, want %v", got, tt.want)
+			got := m.Resolve(api, tt.args.fds)
+			if diff := deep.Equal(got, tt.want); diff != nil {
+				t.Error(diff)
 			}
 		})
 	}

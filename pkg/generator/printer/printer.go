@@ -47,6 +47,8 @@ func (p *printer) writeAtom(v interface{}) {
 		p.WriteString(*v)
 	case int:
 		fmt.Fprint(p, v)
+	case int64:
+		fmt.Fprint(p, v)
 	default:
 		log.Printf("unknown type in printer %T\n", v)
 	}

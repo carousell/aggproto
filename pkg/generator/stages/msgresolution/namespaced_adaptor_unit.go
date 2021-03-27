@@ -7,11 +7,13 @@ import (
 	"github.com/carousell/aggproto/pkg/dsl"
 	"github.com/carousell/aggproto/pkg/generator/printer"
 	"github.com/carousell/aggproto/pkg/registry"
+	"github.com/iancoleman/strcase"
 )
 
 type messageFieldAdaptorUnit struct {
-	underlying registry.Field
-	fieldName  string
+	underlying               registry.Field
+	fieldName                string
+	fieldMessageDependencies []fieldMessageDependency
 }
 
 func (m *messageFieldAdaptorUnit) isAdaptorUnit() {
@@ -19,15 +21,26 @@ func (m *messageFieldAdaptorUnit) isAdaptorUnit() {
 }
 
 func (m *messageFieldAdaptorUnit) printProtoDefinitions(p printer.Printer, fieldIdx int) {
-	panic("implement me")
 }
 
 func (m *messageFieldAdaptorUnit) printAsProtoField(p printer.Printer, idx int) {
-	panic("implement me")
+	switch m.underlying.Type() {
+	case registry.FieldTypeString:
+		p.P("string ", m.fieldName, " = ", idx, ";")
+	case registry.FieldTypeBool:
+		p.P("bool ", m.fieldName, " = ", idx, ";")
+	default:
+		panic("unhandled field type")
+	}
 }
 
 func (m *messageFieldAdaptorUnit) printAsAdaptorCode(p printer.Printer, referenceName string) {
-	panic("implement me")
+	fieldName := strcase.ToLowerCamel(m.fieldMessageDependencies[len(m.fieldMessageDependencies)-1].fieldName)
+	p.P(referenceName, ".", strcase.ToCamel(m.fieldName), " = ", fieldName, ".", strcase.ToCamel(m.fieldName))
+}
+
+func (m *messageFieldAdaptorUnit) dependencies() [][]fieldMessageDependency {
+	return [][]fieldMessageDependency{m.fieldMessageDependencies}
 }
 
 func makeNamespacedMessageAdaptorUnit(r registry.Registry, ofd *dsl.NamespacedMessageFieldDescriptor, ifd *dsl.NamespacedMessageFieldDescriptor) adaptorUnit {
@@ -39,6 +52,7 @@ func makeNamespacedMessageAdaptorUnit(r registry.Registry, ofd *dsl.NamespacedMe
 	ifdSplits := strings.Split(ifd.NamespacedField, ".")
 	ofdSplits := strings.Split(ofd.NamespacedField, ".")
 
+	dependencyStack := []fieldMessageDependency{{msg.Name(), msg}}
 	var resolvedField registry.Field
 	resolvedMsg := msg
 	for idx, fd := range ifdSplits {
@@ -59,17 +73,18 @@ func makeNamespacedMessageAdaptorUnit(r registry.Registry, ofd *dsl.NamespacedMe
 					resolvedField = field
 				} else {
 					resolvedMsg = field.Message()
+					dependencyStack = append(dependencyStack, fieldMessageDependency{fieldName: field.Name(), message: resolvedMsg})
 				}
 				break
 			}
 		}
 		if !found {
-			panic("did not receive to a known field")
+			panic("did not resolve to a known field")
 		}
 	}
 	var unit adaptorUnit
 	if resolvedField != nil {
-		unit = &messageFieldAdaptorUnit{underlying: resolvedField, fieldName: ofdSplits[len(ofdSplits)-1]}
+		unit = &messageFieldAdaptorUnit{underlying: resolvedField, fieldName: ofdSplits[len(ofdSplits)-1], fieldMessageDependencies: dependencyStack}
 		for i := len(ofdSplits) - 2; i >= 0; i -= 1 {
 			unit = &nestedAdaptorUnit{fieldName: ofdSplits[i], nestedUnit: []adaptorUnit{unit}}
 		}

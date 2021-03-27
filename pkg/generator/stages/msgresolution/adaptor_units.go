@@ -4,14 +4,20 @@ import (
 	"fmt"
 
 	"github.com/carousell/aggproto/pkg/generator/printer"
+	"github.com/carousell/aggproto/pkg/registry"
 	"github.com/iancoleman/strcase"
 )
 
+type fieldMessageDependency struct {
+	fieldName string
+	message   registry.Message
+}
 type adaptorUnit interface {
 	isAdaptorUnit()
 	printProtoDefinitions(p printer.Printer, fieldIdx int)
 	printAsProtoField(p printer.Printer, idx int)
 	printAsAdaptorCode(p printer.Printer, referenceName string)
+	dependencies() [][]fieldMessageDependency
 }
 
 type adaptorUnits []adaptorUnit
@@ -41,10 +47,19 @@ type nestedAdaptorUnit struct {
 	nestedUnit []adaptorUnit
 }
 
+func (n *nestedAdaptorUnit) dependencies() [][]fieldMessageDependency {
+	var deps [][]fieldMessageDependency
+	for _, nu := range n.nestedUnit {
+		deps = append(deps, nu.dependencies()...)
+	}
+	return deps
+}
+
 func (n *nestedAdaptorUnit) printAsAdaptorCode(p printer.Printer, referenceName string) {
-	p.P(referenceName, ".", n.fieldName, " = &", strcase.ToCamel(n.fieldName), "Gen{}")
+	fieldName := strcase.ToCamel(n.fieldName)
+	p.P(referenceName, ".", fieldName, " = &", fieldName, "Gen{}")
 	for _, au := range n.nestedUnit {
-		au.printAsAdaptorCode(p, fmt.Sprintf("%s.%s", referenceName, n.fieldName))
+		au.printAsAdaptorCode(p, fmt.Sprintf("%s.%s", referenceName, fieldName))
 	}
 }
 
@@ -79,7 +94,6 @@ onuLoop:
 					}
 				}
 			}
-
 		}
 		n.nestedUnit = append(n.nestedUnit, onu)
 	}

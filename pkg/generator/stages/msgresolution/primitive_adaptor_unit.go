@@ -5,6 +5,7 @@ import (
 
 	"github.com/carousell/aggproto/pkg/dsl"
 	"github.com/carousell/aggproto/pkg/generator/printer"
+	"github.com/iancoleman/strcase"
 )
 
 type staticPrimitiveAdaptorUnit struct {
@@ -12,16 +13,21 @@ type staticPrimitiveAdaptorUnit struct {
 	primitiveFD dsl.PrimitiveFieldDescriptor
 }
 
+func (s *staticPrimitiveAdaptorUnit) dependencies() [][]fieldMessageDependency {
+	return nil
+}
+
 func (s *staticPrimitiveAdaptorUnit) printAsAdaptorCode(p printer.Printer, referenceName string) {
+	fieldName := strcase.ToCamel(s.fieldName)
 	switch fd := s.primitiveFD.(type) {
 	case *dsl.StringValueFieldDescriptor:
-		p.P(referenceName, ".", s.fieldName, " = \"", fd.Value, "\"")
+		p.P(referenceName, ".", fieldName, " = \"", fd.Value, "\"")
 	case *dsl.BoolValueFieldDescriptor:
-		p.P(referenceName, ".", s.fieldName, " = ", fd.Value)
+		p.P(referenceName, ".", fieldName, " = ", fd.Value)
 	case *dsl.FloatValueFieldDescriptor:
-		p.P(referenceName, ".", s.fieldName, " = ", fd.Value)
+		p.P(referenceName, ".", fieldName, " = ", fd.Value)
 	case *dsl.IntValueFieldDescriptor:
-		p.P(referenceName, ".", s.fieldName, " = ", fd.Value)
+		p.P(referenceName, ".", fieldName, " = ", fd.Value)
 	}
 
 }
