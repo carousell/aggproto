@@ -90,5 +90,6 @@ func makeNamespacedMessageAdaptorUnit(r registry.Registry, ofd *dsl.NamespacedMe
 		}
 		return unit
 	}
+	// todo implement explode message
 	panic("unhandled case")
 }

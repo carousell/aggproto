@@ -9,8 +9,8 @@ type msgResolver struct {
 	r registry.Registry
 }
 
-type adaptorBuilder struct {
-	adaptorUnits []adaptorUnit
+func New(r registry.Registry) MessageResolver {
+	return &msgResolver{r}
 }
 
 func (m *msgResolver) Resolve(api dsl.ApiDescriptor, fds []dsl.FieldDescriptor) AdaptorContext {

@@ -13,12 +13,12 @@ var (
 	testBasicNestedEntityBMockMessage = &parser.MessageContainer{
 		PackageName: "pkg_a",
 		MessageName: "entity_b",
-		MessageFields: []registry.Field{
-			&parser.MessageField{
+		MessageFields: []*parser.MessageField{
+			{
 				FieldType: registry.FieldTypeString,
 				FieldName: "field_1",
 			},
-			&parser.MessageField{
+			{
 				FieldType: registry.FieldTypeBool,
 				FieldName: "field_2",
 			},
@@ -27,8 +27,8 @@ var (
 	testBasicNestedMockMessage = &parser.MessageContainer{
 		PackageName: "pkg_a",
 		MessageName: "entity_a",
-		MessageFields: []registry.Field{
-			&parser.MessageField{
+		MessageFields: []*parser.MessageField{
+			{
 				FieldName:        "entity_b_field_1",
 				FieldType:        registry.FieldTypeMessage,
 				FieldMessageType: testBasicNestedEntityBMockMessage,
@@ -38,8 +38,8 @@ var (
 	testComposedNestedWithPrimitiveMock = &parser.MessageContainer{
 		MessageName: "entity_c",
 		PackageName: "pkg_a",
-		MessageFields: []registry.Field{
-			&parser.MessageField{
+		MessageFields: []*parser.MessageField{
+			{
 				FieldType: registry.FieldTypeString,
 				FieldName: "field_1",
 			},
@@ -49,11 +49,9 @@ var (
 
 func stitchMessage(mc *parser.MessageContainer) {
 	for _, f := range mc.MessageFields {
-		f := f.(*parser.MessageField)
 		f.FieldContext = mc
 	}
 	for _, d := range mc.MessageDefinitions {
-		d := d.(*parser.MessageContainer)
 		d.MessageParent = mc
 		stitchMessage(d)
 	}
@@ -134,7 +132,7 @@ func Test_msgResolver_Resolve(t *testing.T) {
 				"pkg_a.entity_a.entity_b_field_1.field_1",
 				"pkg_a.entity_a.entity_b_field_1.field_2",
 			)},
-			fields: fields{r: registry.Mock().OnListMessageMatchPrefix("pkg_a.entity_a", []registry.Message{
+			fields: fields{r: parser.Mock().OnListMessageMatchPrefix("pkg_a.entity_a", []registry.Message{
 				testBasicNestedMockMessage,
 			})},
 			want: &adaptorContext{
@@ -180,7 +178,7 @@ func Test_msgResolver_Resolve(t *testing.T) {
 				"pkg_a.entity_a.entity_b_field_1.new_field_1=pkg_a.entity_c.field_1",
 				"pkg_a.entity_a.entity_b_field_1.new_field_2=42",
 			)},
-			fields: fields{r: registry.Mock().
+			fields: fields{r: parser.Mock().
 				OnListMessageMatchPrefix("pkg_a.entity_a", []registry.Message{
 					testBasicNestedMockMessage,
 				}).

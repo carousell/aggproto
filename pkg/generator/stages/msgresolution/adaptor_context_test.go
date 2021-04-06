@@ -27,6 +27,7 @@ var (
 		EntityBField1Gen entity_b_field_1 = 1;
 	}
 	EntityAGen entity_a = 1;
+}
 `
 )
 

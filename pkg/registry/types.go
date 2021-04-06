@@ -6,7 +6,7 @@ type Message interface {
 	Parent() Message
 	Package() string
 	Name() string
-	FullName()string
+	FullName() string
 }
 
 type FieldType int
@@ -31,18 +31,20 @@ type Field interface {
 type UnaryOperation interface {
 	Input() Message
 	Output() Message
+	Name() string
 	Context() Service
+	FullName() string
 }
 type Service interface {
 	UnaryOperations() []UnaryOperation
 	Package() string
 }
 
-type ListMessageOption func(options listMessageOptions) listMessageOptions
+type ListMessageOption func(options ListMessageOptions) ListMessageOptions
+
+type ListServiceOption func(options ListServiceOptions) ListServiceOptions
 
 type Registry interface {
-	AddMessages(...Message)
-	AddOperations(...UnaryOperation)
 	ListMessages(...ListMessageOption) []Message
-	ListOperations() []UnaryOperation
+	ListOperations(...ListServiceOption) []UnaryOperation
 }

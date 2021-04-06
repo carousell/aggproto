@@ -2,7 +2,7 @@ package msgresolution
 
 import (
 	"github.com/carousell/aggproto/pkg/dsl"
-	"github.com/carousell/aggproto/pkg/generator"
+	"github.com/carousell/aggproto/pkg/generator/stage"
 	"github.com/carousell/aggproto/pkg/registry"
 )
 
@@ -11,6 +11,6 @@ type MessageResolver interface {
 }
 
 type AdaptorContext interface {
-	generator.Context
+	stage.Stage
 	Dependencies() []registry.Message
 }

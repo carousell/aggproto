@@ -2,6 +2,7 @@ package parser
 
 import (
 	_ "embed"
+	"os"
 	"reflect"
 	"testing"
 
@@ -14,8 +15,8 @@ import (
 var bSubMessage = &MessageContainer{
 	PackageName: "pkgb.BMessage",
 	MessageName: "BSubMessage",
-	MessageFields: []registry2.Field{
-		&MessageField{
+	MessageFields: []*MessageField{
+		{
 			FieldName: "field_one",
 			FieldType: registry2.FieldTypeString,
 		},
@@ -24,20 +25,20 @@ var bSubMessage = &MessageContainer{
 var bMessage = &MessageContainer{
 	PackageName: "pkgb",
 	MessageName: "BMessage",
-	MessageDefinitions: []registry2.Message{
+	MessageDefinitions: []*MessageContainer{
 		bSubMessage,
 	},
-	MessageFields: []registry2.Field{
-		&MessageField{
+	MessageFields: []*MessageField{
+		{
 			FieldName: "field_one",
 			FieldType: registry2.FieldTypeString,
 		},
-		&MessageField{
+		{
 			FieldName:        "field_three",
 			FieldType:        registry2.FieldTypeMessage,
 			FieldMessageType: bSubMessage,
 		},
-		&MessageField{
+		{
 			FieldName:        "field_seven",
 			FieldType:        registry2.FieldTypeMessage,
 			RepeatedField:    true,
@@ -49,8 +50,8 @@ var bMessage = &MessageContainer{
 var bReq = &MessageContainer{
 	MessageName: "BReq",
 	PackageName: "pkgb",
-	MessageFields: []registry2.Field{
-		&MessageField{
+	MessageFields: []*MessageField{
+		{
 			FieldName: "name",
 			FieldType: registry2.FieldTypeString,
 		},
@@ -59,11 +60,9 @@ var bReq = &MessageContainer{
 
 func stitchMessage(mc *MessageContainer) {
 	for _, f := range mc.MessageFields {
-		f := f.(*MessageField)
 		f.FieldContext = mc
 	}
 	for _, d := range mc.MessageDefinitions {
-		d := d.(*MessageContainer)
 		d.MessageParent = mc
 		stitchMessage(d)
 	}
@@ -71,11 +70,10 @@ func stitchMessage(mc *MessageContainer) {
 
 func init() {
 	stitchMessage(bMessage)
+	stitchMessage(bReq)
 }
 
 func TestParser(t *testing.T) {
-	reg := registry2.Mock()
-	p := New(reg)
 
 	var testCases = []struct {
 		name         string
@@ -101,19 +99,22 @@ func TestParser(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
+			defer func() {
+				err := recover()
+				if err != nil && tt.wantPanic {
+					t.Log("recovered", err)
+				} else if err != nil && !tt.wantPanic {
+					t.Error(err)
+					t.Fail()
+				} else if err == nil && tt.wantPanic {
+					t.Error("wanted panic did not get panic")
+					t.Fail()
+				}
+			}()
+			testDir := os.TempDir()
+			reg := Load(testDir)
+			p := &parser{r: reg}
 			for _, fdpEncoded := range tt.descriptors {
-				defer func() {
-					err := recover()
-					if err != nil && tt.wantPanic {
-						t.Log("recovered", err)
-					} else if err != nil && !tt.wantPanic {
-						t.Error(err)
-						t.Fail()
-					} else if err == nil && tt.wantPanic {
-						t.Error("wanted panic did not get panic")
-						t.Fail()
-					}
-				}()
 				fdp := &descriptorpb.FileDescriptorProto{}
 				err := proto.Unmarshal(fdpEncoded, fdp)
 				if err != nil {
@@ -126,10 +127,18 @@ func TestParser(t *testing.T) {
 					t.Fail()
 				}
 			}
-			for i, msg := range reg.ListMessages() {
-				wantMsg := tt.wantMessages[i]
-				if !reflect.DeepEqual(wantMsg, msg) {
-					t.Errorf("want %v got %v", wantMsg, msg)
+			registeredMsgs := map[string]registry2.Message{}
+			for _, msg := range reg.ListMessages() {
+				registeredMsgs[msg.FullName()] = msg
+			}
+			for _, msg := range tt.wantMessages {
+				gotMsg, ok := registeredMsgs[msg.FullName()]
+				if !ok {
+					t.Errorf("want %v got %v", msg, nil)
+					t.Fail()
+				}
+				if !reflect.DeepEqual(msg, gotMsg) {
+					t.Errorf("want %v got %v", msg, gotMsg)
 					t.Fail()
 				}
 			}

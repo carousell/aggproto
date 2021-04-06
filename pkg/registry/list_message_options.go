@@ -1,20 +1,22 @@
 package registry
 
-type listMessageOptions struct {
-	exactFullName *string
-	prefixMatch   *string
+type ListMessageOptions struct {
+	ExactFullName *string
+	PrefixMatch   *string
 }
 
+// does message sub definition based resolution
 func LMOWithFullName(name string) ListMessageOption {
-	return func(options listMessageOptions) listMessageOptions {
-		options.exactFullName = &name
+	return func(options ListMessageOptions) ListMessageOptions {
+		options.ExactFullName = &name
 		return options
 	}
 }
 
+// used for field name resolution;
 func LMOWithPrefixMatch(prefix string) ListMessageOption {
-	return func(options listMessageOptions) listMessageOptions {
-		options.prefixMatch = &prefix
+	return func(options ListMessageOptions) ListMessageOptions {
+		options.PrefixMatch = &prefix
 		return options
 	}
 }

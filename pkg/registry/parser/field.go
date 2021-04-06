@@ -36,7 +36,7 @@ func (m *MessageField) Repeated() bool {
 	return m.RepeatedField
 }
 
-func parseField(r registry.Registry, msgContext *MessageContainer, fieldDescriptorProto *descriptorpb.FieldDescriptorProto) registry.Field {
+func parseField(r registry.Registry, msgContext *MessageContainer, fieldDescriptorProto *descriptorpb.FieldDescriptorProto) *MessageField {
 	if fieldDescriptorProto.OneofIndex != nil {
 		// TODO
 		panic("unhandled oneof")

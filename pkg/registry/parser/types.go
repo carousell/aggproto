@@ -6,4 +6,5 @@ import (
 
 type Parser interface {
 	AddProtoContainer(file *descriptorpb.FileDescriptorProto) error
+	SaveRegistry()error
 }

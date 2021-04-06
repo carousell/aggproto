@@ -15,7 +15,7 @@ type adaptorContext struct {
 	adaptorUnits  []adaptorUnit
 }
 
-func topLevelDependencies(deps [][]fieldMessageDependency) string {
+func topLevelDeps(deps [][]fieldMessageDependency) []fieldMessageDependency {
 	tld := map[string]fieldMessageDependency{}
 	for _, dep := range deps {
 		if len(dep) > 0 {
@@ -24,6 +24,14 @@ func topLevelDependencies(deps [][]fieldMessageDependency) string {
 			}
 		}
 	}
+	var ret []fieldMessageDependency
+	for _, v := range tld {
+		ret = append(ret, v)
+	}
+	return ret
+}
+func printTopLevelDependencies(deps [][]fieldMessageDependency) string {
+	tld := topLevelDeps(deps)
 	var params []string
 	for _, v := range tld {
 		params = append(params, fmt.Sprintf("%s *%s.%s", strcase.ToLowerCamel(v.fieldName), v.message.Package(), strcase.ToCamel(v.message.Name())))
@@ -52,7 +60,7 @@ func (a *adaptorContext) PrintCode(p printer.Printer) {
 	for _, au := range a.adaptorUnits {
 		deps = append(deps, au.dependencies()...)
 	}
-	p.P("func ", "Adapt", respClassName, "(", topLevelDependencies(deps), ") *", respClassName, "{")
+	p.P("func ", "Adapt", respClassName, "(", printTopLevelDependencies(deps), ") *", respClassName, "{")
 	p.Tab()
 	prepareDependencies(p, deps)
 	p.P("resp := &", respClassName, "{}")
@@ -78,5 +86,14 @@ func (a *adaptorContext) PrintProto(p printer.Printer) {
 }
 
 func (a *adaptorContext) Dependencies() []registry.Message {
-	return nil
+	var deps [][]fieldMessageDependency
+	for _, au := range a.adaptorUnits {
+		deps = append(deps, au.dependencies()...)
+	}
+	tld := topLevelDeps(deps)
+	var ret []registry.Message
+	for _, fmd := range tld {
+		ret = append(ret, fmd.message)
+	}
+	return ret
 }
