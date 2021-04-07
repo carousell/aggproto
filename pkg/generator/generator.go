@@ -20,10 +20,7 @@ func (g *generator) PlanAndGenerate(ctx *dsl.Context) map[string]string {
 	plan := planner.Plan(ctx)
 
 	printerFactory := printer.New()
-	for _, genCtx := range plan {
-		genCtx.PrintProto(printerFactory)
-		genCtx.PrintCode(printerFactory)
-	}
+	plan.PrintProto(printerFactory)
+	plan.PrintCode(printerFactory)
 	return printerFactory.Out()
-
 }

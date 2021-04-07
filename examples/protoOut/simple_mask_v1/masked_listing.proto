@@ -4,6 +4,12 @@ option go_package = "github.com/carousell/aggproto/examples/goOut/simple_mask_v1
 service MaskedListingService {
 	rpc InvokeMaskedListing (MaskedListingRequest) returns (MaskedListingResponse);
 }
+message MaskedListingRequest {
+	message GetListingRequestGen {
+		string listing_id = 1;
+	}
+	GetListingRequestGen get_listing_request = 1;
+}
 message MaskedListingResponse {
 	message ListingGen {
 		message GetListingResponseGen {
@@ -16,10 +22,4 @@ message MaskedListingResponse {
 		GetListingResponseGen GetListingResponse = 1;
 	}
 	ListingGen listing = 1;
-}
-message MaskedListingRequest {
-	message GetListingRequestGen {
-		string listing_id = 1;
-	}
-	GetListingRequestGen get_listing_request = 1;
 }

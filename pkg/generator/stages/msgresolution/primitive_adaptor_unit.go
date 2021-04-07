@@ -17,7 +17,7 @@ func (s *staticPrimitiveAdaptorUnit) dependencies() [][]fieldMessageDependency {
 	return nil
 }
 
-func (s *staticPrimitiveAdaptorUnit) printAsAdaptorCode(p printer.Printer, referenceName string) {
+func (s *staticPrimitiveAdaptorUnit) printAsAdaptorCode(p printer.Printer, referenceName string, parents []string) {
 	fieldName := strcase.ToCamel(s.fieldName)
 	switch fd := s.primitiveFD.(type) {
 	case *dsl.StringValueFieldDescriptor:

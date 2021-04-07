@@ -14,7 +14,7 @@ func New(r registry.Registry) InputResolver {
 	return &inResolver{r: r}
 }
 
-func (i *inResolver) Resolve(api dsl.ApiDescriptor, opCtxs []opresolution.OperationContext) *InputContext {
+func (i *inResolver) Resolve(api dsl.ApiDescriptor, meta dsl.Meta, opCtxs []opresolution.OperationContext) *InputContext {
 	requiredInputsMap := map[string]registry.Message{}
 	for _, op := range opCtxs {
 		msg := op.InputDependency()
@@ -26,5 +26,9 @@ func (i *inResolver) Resolve(api dsl.ApiDescriptor, opCtxs []opresolution.Operat
 	for _, v := range requiredInputsMap {
 		requiredInput = append(requiredInput, v)
 	}
-	return &InputContext{apiDescriptor: api, required: requiredInput}
+	inCtx := &InputContext{apiDescriptor: api, required: requiredInput, meta: meta}
+	for _, opCtx := range opCtxs {
+		opCtx.AddStageDependency(inCtx)
+	}
+	return inCtx
 }

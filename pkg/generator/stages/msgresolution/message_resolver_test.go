@@ -232,7 +232,7 @@ func Test_msgResolver_Resolve(t *testing.T) {
 			m := &msgResolver{
 				r: tt.fields.r,
 			}
-			got := m.Resolve(api, tt.args.fds)
+			got := m.Resolve(api, tt.args.fds, )
 			if diff := deep.Equal(got, tt.want); diff != nil {
 				t.Error(diff)
 			}

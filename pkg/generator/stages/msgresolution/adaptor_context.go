@@ -6,13 +6,24 @@ import (
 
 	"github.com/carousell/aggproto/pkg/dsl"
 	"github.com/carousell/aggproto/pkg/generator/printer"
+	"github.com/carousell/aggproto/pkg/generator/stage"
 	"github.com/carousell/aggproto/pkg/registry"
 	"github.com/iancoleman/strcase"
 )
 
 type adaptorContext struct {
-	apiDescriptor dsl.ApiDescriptor
-	adaptorUnits  []adaptorUnit
+	apiDescriptor   dsl.ApiDescriptor
+	meta            dsl.Meta
+	adaptorUnits    []adaptorUnit
+	dependentStages []stage.Stage
+}
+
+func (a *adaptorContext) AddStageDependency(stage stage.Stage) {
+	a.dependentStages = append(a.dependentStages, stage)
+}
+
+func (a *adaptorContext) GetStageDependencies() []stage.Stage {
+	return a.dependentStages
 }
 
 func topLevelDeps(deps [][]fieldMessageDependency) []fieldMessageDependency {
@@ -47,26 +58,59 @@ func prepareDependencies(p printer.Printer, deps [][]fieldMessageDependency) {
 			if _, ok := doneDeps[key]; ok {
 				continue
 			}
-			p.P(strcase.ToLowerCamel(dep[i+1].fieldName), " := ", strcase.ToLowerCamel(dep[i].fieldName), ".", strcase.ToLowerCamel(dep[i+1].fieldName))
+			p.P(strcase.ToLowerCamel(dep[i+1].fieldName), " := ", strcase.ToLowerCamel(dep[i].fieldName), ".", strcase.ToCamel(dep[i+1].fieldName))
 			doneDeps[key] = struct{}{}
 		}
 	}
 }
+func prepareImports(p printer.Printer, meta dsl.Meta, deps [][]fieldMessageDependency) {
+	packages := map[string]struct{}{}
+	for _, dep := range deps {
+		for _, d := range dep {
+			packages[d.message.Package()] = struct{}{}
+		}
+	}
+	if len(packages) > 0 {
+		p.P("import (")
+		p.Tab()
+		for pkg, _ := range packages {
+			p.P("\"", meta.GoPackage, "/", pkg, "\"")
+		}
+		p.UnTab()
+		p.P(")")
+	}
+	p.P()
+}
 
+func (a *adaptorContext) PrintCodeUsage(p printer.Printer) {
+	var deps [][]fieldMessageDependency
+	for _, au := range a.adaptorUnits {
+		deps = append(deps, au.dependencies()...)
+	}
+	tld := topLevelDeps(deps)
+	var params []string
+	for _, v := range tld {
+		params = append(params, strcase.ToLowerCamel(v.fieldName))
+	}
+	paramString := strings.Join(params, ", ")
+	p.P("resp := adapt", strcase.ToCamel(a.apiDescriptor.Name()), "Response(", paramString, ")")
+}
 func (a *adaptorContext) PrintCode(printerFactory printer.Factory) {
-	p := printerFactory.Get(fmt.Sprintf("%s.go", a.apiDescriptor.FileName()))
+	p := printerFactory.Get(fmt.Sprintf("%s_adaptor.go", a.apiDescriptor.FileName()))
 	p.P("package ", a.apiDescriptor.Group(), "_v", a.apiDescriptor.Version())
 	respClassName := fmt.Sprintf("%sResponse", strcase.ToCamel(a.apiDescriptor.Name()))
 	var deps [][]fieldMessageDependency
 	for _, au := range a.adaptorUnits {
 		deps = append(deps, au.dependencies()...)
 	}
-	p.P("func ", "Adapt", respClassName, "(", printTopLevelDependencies(deps), ") *", respClassName, "{")
+	p.P()
+	prepareImports(p, a.meta, deps)
+	p.P("func ", "adapt", respClassName, "(", printTopLevelDependencies(deps), ") *", respClassName, "{")
 	p.Tab()
 	prepareDependencies(p, deps)
 	p.P("resp := &", respClassName, "{}")
 	for _, au := range a.adaptorUnits {
-		au.printAsAdaptorCode(p, "resp")
+		au.printAsAdaptorCode(p, "resp", []string{respClassName})
 	}
 	p.P("return resp")
 	p.UnTab()

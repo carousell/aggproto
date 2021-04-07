@@ -11,7 +11,7 @@ import (
 )
 
 type StagePlanner interface {
-	Plan(ctx *dsl.Context) []stage.Stage
+	Plan(ctx *dsl.Context) stage.Stage
 }
 
 func Planner(r registry.Registry) StagePlanner {
@@ -30,19 +30,31 @@ type stagePlanner struct {
 	inputResolver inresolution.InputResolver
 }
 
-func (s *stagePlanner) Plan(ctx *dsl.Context) []stage.Stage {
-	var res []stage.Stage
-	res = append(res, orchestrator.New(ctx.Api, ctx.Meta))
-	adaptorContext := s.msgResolver.Resolve(ctx.Api, ctx.Output)
-	res = append(res, adaptorContext)
+func (s *stagePlanner) Plan(ctx *dsl.Context) stage.Stage {
+	o := orchestrator.New(ctx.Api, ctx.Meta)
+	adaptorContext := s.msgResolver.Resolve(ctx.Api, ctx.Meta, ctx.Output)
+	operationContexts := s.opResolver.Resolve(ctx.Api, ctx.Meta, adaptorContext, ctx.Operation)
+	_ = s.inputResolver.Resolve(ctx.Api, ctx.Meta, operationContexts)
+	o.AddStages(resolveStageOrder(adaptorContext))
+	return o
+}
 
-	operationContexts := s.opResolver.Resolve(adaptorContext, ctx.Operation)
+func resolveStageOrder(finalStage stage.Stage) []stage.Stage {
+	var ret []stage.Stage
+	depChan := make(chan stage.Stage)
+	go func() {
+		for nextStage := range depChan {
+			ret = append(ret, nextStage)
+		}
+	}()
+	traversePostOrder(finalStage, depChan)
+	close(depChan)
+	return ret
+}
 
-	for _, oc := range operationContexts {
-		res = append(res, oc)
+func traversePostOrder(currentStage stage.Stage, depChan chan stage.Stage) {
+	for _, s := range currentStage.GetStageDependencies() {
+		traversePostOrder(s, depChan)
 	}
-
-	inputContext := s.inputResolver.Resolve(ctx.Api, operationContexts)
-	res = append(res, inputContext)
-	return res
+	depChan <- currentStage
 }

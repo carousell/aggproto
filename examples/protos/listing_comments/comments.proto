@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package listing_comments;
+option go_package = "github.com/carousell/aggproto/examples/goOut/listing_comments";
 
 message GetListingCommentsRequest {
     string listing_id = 1;

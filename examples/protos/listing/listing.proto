@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package listing;
+option go_package = "github.com/carousell/aggproto/examples/goOut/listing";
 
 message GetListingRequest {
     string listing_id = 1;

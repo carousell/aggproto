@@ -34,7 +34,7 @@ func (m *messageFieldAdaptorUnit) printAsProtoField(p printer.Printer, idx int) 
 	}
 }
 
-func (m *messageFieldAdaptorUnit) printAsAdaptorCode(p printer.Printer, referenceName string) {
+func (m *messageFieldAdaptorUnit) printAsAdaptorCode(p printer.Printer, referenceName string, parents []string) {
 	fieldName := strcase.ToLowerCamel(m.fieldMessageDependencies[len(m.fieldMessageDependencies)-1].fieldName)
 	p.P(referenceName, ".", strcase.ToCamel(m.fieldName), " = ", fieldName, ".", strcase.ToCamel(m.fieldName))
 }

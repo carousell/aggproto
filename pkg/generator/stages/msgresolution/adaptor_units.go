@@ -2,6 +2,7 @@ package msgresolution
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/carousell/aggproto/pkg/generator/printer"
 	"github.com/carousell/aggproto/pkg/registry"
@@ -16,7 +17,7 @@ type adaptorUnit interface {
 	isAdaptorUnit()
 	printProtoDefinitions(p printer.Printer)
 	printAsProtoField(p printer.Printer, idx int)
-	printAsAdaptorCode(p printer.Printer, referenceName string)
+	printAsAdaptorCode(p printer.Printer, referenceName string, parents []string)
 	dependencies() [][]fieldMessageDependency
 }
 
@@ -55,11 +56,12 @@ func (n *nestedAdaptorUnit) dependencies() [][]fieldMessageDependency {
 	return deps
 }
 
-func (n *nestedAdaptorUnit) printAsAdaptorCode(p printer.Printer, referenceName string) {
+func (n *nestedAdaptorUnit) printAsAdaptorCode(p printer.Printer, referenceName string, parents []string) {
 	fieldName := strcase.ToCamel(n.fieldName)
-	p.P(referenceName, ".", fieldName, " = &", fieldName, "Gen{}")
+	parentName := strings.Join(parents, "_")
+	p.P(referenceName, ".", fieldName, " = &", parentName, "_", fieldName, "Gen{}")
 	for _, au := range n.nestedUnit {
-		au.printAsAdaptorCode(p, fmt.Sprintf("%s.%s", referenceName, fieldName))
+		au.printAsAdaptorCode(p, fmt.Sprintf("%s.%s", referenceName, fieldName), append(parents, fmt.Sprintf("%sGen", fieldName)))
 	}
 }
 

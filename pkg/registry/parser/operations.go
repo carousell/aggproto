@@ -27,6 +27,10 @@ func (s *ServiceContainer) Package() string {
 	return s.PackageName
 }
 
+func (s *ServiceContainer)Name()string{
+	return s.ServiceName
+}
+
 func parseService(r registry.Registry, svcType *descriptorpb.ServiceDescriptorProto, packageName string) *ServiceContainer {
 	sc := &ServiceContainer{
 		PackageName: packageName,

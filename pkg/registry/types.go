@@ -38,6 +38,7 @@ type UnaryOperation interface {
 type Service interface {
 	UnaryOperations() []UnaryOperation
 	Package() string
+	Name() string
 }
 
 type ListMessageOption func(options ListMessageOptions) ListMessageOptions

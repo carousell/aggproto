@@ -16,7 +16,7 @@ func New(r registry.Registry) OperationResolver {
 	return &opResolver{r: r}
 }
 
-func (o *opResolver) Resolve(ctx msgresolution.AdaptorContext, descriptor dsl.OpDescriptor) []OperationContext {
+func (o *opResolver) Resolve(api dsl.ApiDescriptor, meta dsl.Meta, adaptorContext msgresolution.AdaptorContext, descriptor dsl.OpDescriptor) []OperationContext {
 	allowedOpsMap := map[string]registry.UnaryOperation{}
 	if len(descriptor.AllowedOperations) > 0 {
 		allowedOps := o.r.ListOperations(registry.LSOWithOperationNameIn(descriptor.AllowedOperations))
@@ -29,7 +29,7 @@ func (o *opResolver) Resolve(ctx msgresolution.AdaptorContext, descriptor dsl.Op
 	}
 
 	var resolvedOps []registry.UnaryOperation
-	dependencies := ctx.Dependencies()
+	dependencies := adaptorContext.Dependencies()
 depLoop:
 	for _, dep := range dependencies {
 		operations := o.r.ListOperations(registry.LSOWithOutputMessage(dep))
@@ -54,7 +54,9 @@ depLoop:
 	}
 	var ret []OperationContext
 	for _, op := range resolvedOps {
-		ret = append(ret, &opContext{op})
+		opCtx := &opContext{operation: op, api: api, meta: meta}
+		ret = append(ret, opCtx)
+		adaptorContext.AddStageDependency(opCtx)
 	}
 	return ret
 }

@@ -6,5 +6,5 @@ import (
 )
 
 type InputResolver interface {
-	Resolve(api dsl.ApiDescriptor, opCtxs []opresolution.OperationContext) *InputContext
+	Resolve(api dsl.ApiDescriptor, meta dsl.Meta, opCtxs []opresolution.OperationContext) *InputContext
 }
