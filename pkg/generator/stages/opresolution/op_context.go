@@ -9,11 +9,10 @@ type opContext struct {
 	operation registry.UnaryOperation
 }
 
-func (o *opContext) PrintProto(p printer.Printer) {
+func (o *opContext) PrintProto(p printer.Factory) {
 }
 
-func (o *opContext) PrintCode(p printer.Printer) {
-	panic("implement me")
+func (o *opContext) PrintCode(p printer.Factory) {
 }
 
 func (o *opContext) InputDependency() registry.Message {

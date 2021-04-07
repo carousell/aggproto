@@ -4,4 +4,5 @@ type Context struct {
 	Api       ApiDescriptor
 	Output    []FieldDescriptor
 	Operation OpDescriptor
+	Meta      Meta
 }

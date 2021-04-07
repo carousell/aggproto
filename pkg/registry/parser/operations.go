@@ -39,6 +39,7 @@ func parseService(r registry.Registry, svcType *descriptorpb.ServiceDescriptorPr
 			ops = append(ops, op)
 		}
 	}
+	sc.UnaryOps = append(sc.UnaryOps, ops...)
 	return sc
 }
 

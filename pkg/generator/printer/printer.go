@@ -13,7 +13,7 @@ type Printer interface {
 	UnTab()
 }
 
-func New() Printer {
+func newPrinter() Printer {
 	return &printer{new(bytes.Buffer), ""}
 }
 

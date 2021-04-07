@@ -32,8 +32,10 @@ func (s *store) save() error {
 	if err != nil {
 		return err
 	}
-	for k, v := range s.fileDescriptors {
-		filePath := fmt.Sprintf("%s/%s.fdp", s.dirName, k)
+	for _, v := range s.fileDescriptors {
+		splits := strings.Split(v.GetName(), "/")
+		protoName := splits[len(splits)-1]
+		filePath := fmt.Sprintf("%s/%s_%s.fdp", s.dirName, v.GetPackage(), protoName)
 		file, err := os.Create(filePath)
 		if err != nil {
 			return err
@@ -235,8 +237,11 @@ func Load(dirName string) persistentRegistry {
 		ops:  map[string]*UnaryOperationContainer{},
 	}
 	err := filepath.WalkDir(dirName, func(path string, d fs.DirEntry, err error) error {
-		if d != nil {
+		if d == nil || d.IsDir() {
 			return nil
+		}
+		if err != nil {
+			return err
 		}
 		file, err := os.Open(path)
 		if err != nil {

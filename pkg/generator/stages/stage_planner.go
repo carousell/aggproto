@@ -6,11 +6,12 @@ import (
 	"github.com/carousell/aggproto/pkg/generator/stages/inresolution"
 	"github.com/carousell/aggproto/pkg/generator/stages/msgresolution"
 	"github.com/carousell/aggproto/pkg/generator/stages/opresolution"
+	"github.com/carousell/aggproto/pkg/generator/stages/orchestrator"
 	"github.com/carousell/aggproto/pkg/registry"
 )
 
 type StagePlanner interface {
-	Plan(ctx dsl.Context) []stage.Stage
+	Plan(ctx *dsl.Context) []stage.Stage
 }
 
 func Planner(r registry.Registry) StagePlanner {
@@ -29,8 +30,9 @@ type stagePlanner struct {
 	inputResolver inresolution.InputResolver
 }
 
-func (s *stagePlanner) Plan(ctx dsl.Context) []stage.Stage {
+func (s *stagePlanner) Plan(ctx *dsl.Context) []stage.Stage {
 	var res []stage.Stage
+	res = append(res, orchestrator.New(ctx.Api, ctx.Meta))
 	adaptorContext := s.msgResolver.Resolve(ctx.Api, ctx.Output)
 	res = append(res, adaptorContext)
 
@@ -40,7 +42,7 @@ func (s *stagePlanner) Plan(ctx dsl.Context) []stage.Stage {
 		res = append(res, oc)
 	}
 
-	inputContext := s.inputResolver.Resolve(operationContexts)
+	inputContext := s.inputResolver.Resolve(ctx.Api, operationContexts)
 	res = append(res, inputContext)
 	return res
 }

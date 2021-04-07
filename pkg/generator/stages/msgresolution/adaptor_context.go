@@ -53,7 +53,8 @@ func prepareDependencies(p printer.Printer, deps [][]fieldMessageDependency) {
 	}
 }
 
-func (a *adaptorContext) PrintCode(p printer.Printer) {
+func (a *adaptorContext) PrintCode(printerFactory printer.Factory) {
+	p := printerFactory.Get(fmt.Sprintf("%s.go", a.apiDescriptor.FileName()))
 	p.P("package ", a.apiDescriptor.Group(), "_v", a.apiDescriptor.Version())
 	respClassName := fmt.Sprintf("%sResponse", strcase.ToCamel(a.apiDescriptor.Name()))
 	var deps [][]fieldMessageDependency
@@ -72,11 +73,12 @@ func (a *adaptorContext) PrintCode(p printer.Printer) {
 	p.P("}")
 }
 
-func (a *adaptorContext) PrintProto(p printer.Printer) {
-	p.P("message ", fmt.Sprintf("%sResponse", strcase.ToCamel(a.apiDescriptor.Name())), "{")
+func (a *adaptorContext) PrintProto(printerFactory printer.Factory) {
+	p := printerFactory.Get(fmt.Sprintf("%s.proto", a.apiDescriptor.FileName()))
+	p.P("message ", fmt.Sprintf("%sResponse", strcase.ToCamel(a.apiDescriptor.Name())), " {")
 	p.Tab()
-	for idx, au := range a.adaptorUnits {
-		au.printProtoDefinitions(p, idx+1)
+	for _, au := range a.adaptorUnits {
+		au.printProtoDefinitions(p)
 	}
 	for idx, au := range a.adaptorUnits {
 		au.printAsProtoField(p, idx+1)

@@ -45,7 +45,7 @@ func (s *staticPrimitiveAdaptorUnit) printAsProtoField(p printer.Printer, fieldI
 	}
 }
 
-func (s *staticPrimitiveAdaptorUnit) printProtoDefinitions(p printer.Printer, fieldIdx int) {
+func (s *staticPrimitiveAdaptorUnit) printProtoDefinitions(p printer.Printer) {
 }
 
 func (s *staticPrimitiveAdaptorUnit) isAdaptorUnit() {

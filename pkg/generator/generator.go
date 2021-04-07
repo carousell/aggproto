@@ -11,14 +11,19 @@ type generator struct {
 	r registry.Registry
 }
 
-func (g *generator) PlanAndGenerate(ctx dsl.Context) {
+func Generator(r registry.Registry) *generator {
+	return &generator{r: r}
+}
+
+func (g *generator) PlanAndGenerate(ctx *dsl.Context) map[string]string {
 	planner := stages.Planner(g.r)
 	plan := planner.Plan(ctx)
 
-	p := printer.New()
+	printerFactory := printer.New()
 	for _, genCtx := range plan {
-		genCtx.PrintProto(p)
+		genCtx.PrintProto(printerFactory)
+		genCtx.PrintCode(printerFactory)
 	}
-
+	return printerFactory.Out()
 
 }

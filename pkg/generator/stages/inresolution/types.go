@@ -1,7 +1,10 @@
 package inresolution
 
-import "github.com/carousell/aggproto/pkg/generator/stages/opresolution"
+import (
+	"github.com/carousell/aggproto/pkg/dsl"
+	"github.com/carousell/aggproto/pkg/generator/stages/opresolution"
+)
 
 type InputResolver interface {
-	Resolve(opCtxs []opresolution.OperationContext) *InputContext
+	Resolve(api dsl.ApiDescriptor, opCtxs []opresolution.OperationContext) *InputContext
 }

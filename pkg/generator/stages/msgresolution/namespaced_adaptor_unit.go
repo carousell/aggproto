@@ -20,7 +20,7 @@ func (m *messageFieldAdaptorUnit) isAdaptorUnit() {
 	panic("should never be called")
 }
 
-func (m *messageFieldAdaptorUnit) printProtoDefinitions(p printer.Printer, fieldIdx int) {
+func (m *messageFieldAdaptorUnit) printProtoDefinitions(p printer.Printer) {
 }
 
 func (m *messageFieldAdaptorUnit) printAsProtoField(p printer.Printer, idx int) {
@@ -57,10 +57,11 @@ func makeNamespacedMessageAdaptorUnit(r registry.Registry, ofd *dsl.NamespacedMe
 	resolvedMsg := msg
 	for idx, fd := range ifdSplits {
 		found := false
-		if resolvedMsg.Package() == fd {
+		// todo get unresolved tail from somewhere
+		if idx == 0 && resolvedMsg.Package() == fd {
 			continue
 		}
-		if resolvedMsg.Name() == fd {
+		if idx <= 1 && resolvedMsg.Name() == fd {
 			continue
 		}
 		for _, field := range resolvedMsg.Fields() {

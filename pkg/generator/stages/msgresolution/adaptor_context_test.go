@@ -5,7 +5,7 @@ import (
 
 	"github.com/carousell/aggproto/pkg/dsl"
 	"github.com/carousell/aggproto/pkg/generator/printer"
-	"github.com/kylelemons/godebug/diff"
+	"github.com/go-test/deep"
 )
 
 var (
@@ -39,7 +39,7 @@ func Test_adaptorContext_PrintProto(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
-		want   string
+		want   map[string]string
 	}{
 		{
 			name: "empty units",
@@ -47,7 +47,9 @@ func Test_adaptorContext_PrintProto(t *testing.T) {
 				apiDescriptor: dsl.GetApiDescriptor("adaptorTest", "emptyTest", 1),
 				adaptorUnits:  nil,
 			},
-			want: emptyTestExpected,
+			want: map[string]string{
+				"adaptorTest_v1/emptyTest.go": emptyTestExpected,
+			},
 		},
 		{
 			name: "Nested primitive units",
@@ -65,7 +67,9 @@ func Test_adaptorContext_PrintProto(t *testing.T) {
 					},
 				},
 			},
-			want: nestedPrimitiveExpected,
+			want: map[string]string{
+				"adaptorTest_v1/nestedPrimitiveTest.go": nestedPrimitiveExpected,
+			},
 		},
 		{
 			name: "namespaced message",
@@ -88,7 +92,9 @@ func Test_adaptorContext_PrintProto(t *testing.T) {
 					},
 				},
 			},
-			want: namespacedMessageExpected,
+			want: map[string]string{
+				"adaptorTest_v1/namespacedMessage.go": namespacedMessageExpected,
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -99,9 +105,9 @@ func Test_adaptorContext_PrintProto(t *testing.T) {
 				adaptorUnits:  tt.fields.adaptorUnits,
 			}
 			a.PrintProto(p)
-			got := p.String()
-			if got != tt.want {
-				t.Errorf("PrintProto got=%s want %s", got, tt.want)
+			got := p.Out()
+			if diff := deep.Equal(got, tt.want); diff != nil {
+				t.Errorf("PrintCode() got %v want %v diff %s", got, tt.want, diff)
 			}
 		})
 	}
@@ -156,7 +162,7 @@ func Test_adaptorContext_PrintCode(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
-		want   string
+		want   map[string]string
 	}{
 		{
 			name: "empty units",
@@ -164,7 +170,9 @@ func Test_adaptorContext_PrintCode(t *testing.T) {
 				apiDescriptor: dsl.GetApiDescriptor("adaptorTest", "emptyTest", 1),
 				adaptorUnits:  nil,
 			},
-			want: emptyTestCodeExpected,
+			want: map[string]string{
+				"adaptorTest_v1/emptyTest.proto": emptyTestCodeExpected,
+			},
 		},
 		{
 			name: "Nested primitive units",
@@ -182,7 +190,9 @@ func Test_adaptorContext_PrintCode(t *testing.T) {
 					},
 				},
 			},
-			want: nestedPrimitiveCodeExpected,
+			want: map[string]string{
+				"adaptorTest_v1/nestedPrimitiveTest.proto": nestedPrimitiveCodeExpected,
+			},
 		},
 		{
 			name: "namespaced message",
@@ -213,7 +223,9 @@ func Test_adaptorContext_PrintCode(t *testing.T) {
 					},
 				},
 			},
-			want: namespacedMessageCodeExpected,
+			want: map[string]string{
+				"adaptorTest_v1/namespacedMessage.proto": namespacedMessageCodeExpected,
+			},
 		},
 		{
 			name: "namespaced composed hybrid",
@@ -256,20 +268,23 @@ func Test_adaptorContext_PrintCode(t *testing.T) {
 					},
 				},
 			},
-			want: namespacedComposedHybridExpected,
+			want: map[string]string{
+				"adaptorTest_v1/namespacedComposedHybrid.proto": namespacedComposedHybridExpected,
+			},
 		},
 	}
 	for _, tt := range tests {
-		p := printer.New()
+		factory := printer.New()
 		t.Run(tt.name, func(t *testing.T) {
 			a := &adaptorContext{
 				apiDescriptor: tt.fields.apiDescriptor,
 				adaptorUnits:  tt.fields.adaptorUnits,
 			}
-			a.PrintCode(p)
-			got := p.String()
-			if got != tt.want {
-				t.Errorf("PrintCode() got %s want %s diff %s", got, tt.want, diff.Diff(got, tt.want))
+			a.PrintCode(factory)
+
+			got := factory.Out()
+			if diff := deep.Equal(got, tt.want); diff != nil {
+				t.Errorf("PrintCode() got %v want %v diff %s", got, tt.want, diff)
 			}
 		})
 	}

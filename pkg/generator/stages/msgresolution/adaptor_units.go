@@ -14,7 +14,7 @@ type fieldMessageDependency struct {
 }
 type adaptorUnit interface {
 	isAdaptorUnit()
-	printProtoDefinitions(p printer.Printer, fieldIdx int)
+	printProtoDefinitions(p printer.Printer)
 	printAsProtoField(p printer.Printer, idx int)
 	printAsAdaptorCode(p printer.Printer, referenceName string)
 	dependencies() [][]fieldMessageDependency
@@ -67,11 +67,11 @@ func (n *nestedAdaptorUnit) printAsProtoField(p printer.Printer, idx int) {
 	p.P(fmt.Sprintf("%sGen ", strcase.ToCamel(n.fieldName)), n.fieldName, " = ", idx, ";")
 }
 
-func (n *nestedAdaptorUnit) printProtoDefinitions(p printer.Printer, fieldIdx int) {
-	p.P("message ", fmt.Sprintf("%sGen", strcase.ToCamel(n.fieldName)), "{")
+func (n *nestedAdaptorUnit) printProtoDefinitions(p printer.Printer) {
+	p.P("message ", fmt.Sprintf("%sGen", strcase.ToCamel(n.fieldName)), " {")
 	p.Tab()
-	for idx, au := range n.nestedUnit {
-		au.printProtoDefinitions(p, idx+1)
+	for _, au := range n.nestedUnit {
+		au.printProtoDefinitions(p)
 	}
 	for idx, au := range n.nestedUnit {
 		au.printAsProtoField(p, idx+1)

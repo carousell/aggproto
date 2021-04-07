@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package listing_comments;
+
+message GetListingCommentsRequest {
+    string listing_id = 1;
+}
+
+message ListingComment {
+    message Comment {
+        string title = 1;
+        string body = 2;
+    }
+    repeated Comment comments = 1;
+}
+
+message GetListingCommentsResponse {
+    ListingComment listing_comment = 1;
+}
+
+service ListingComments {
+    rpc GetListingComments (GetListingCommentsRequest) returns (GetListingCommentsResponse) {
+    }
+}
