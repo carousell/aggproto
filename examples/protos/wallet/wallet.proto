@@ -1,0 +1,16 @@
+syntax = "proto3";
+package wallet;
+option go_package = "github.com/carousell/aggproto/examples/goOut/wallet";
+message UserWallet {
+    int64 coin_balance = 1;
+}
+message GetUserWalletRequest {
+    string user_id = 1;
+}
+message GetUserWalletResponse {
+    UserWallet user_wallet = 1;
+}
+service Wallet {
+    rpc GetUserWallet (GetUserWalletRequest) returns (GetUserWalletResponse) {
+    }
+}

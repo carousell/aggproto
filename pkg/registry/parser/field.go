@@ -61,9 +61,11 @@ func parseField(r registry.Registry, msgContext *MessageContainer, fieldDescript
 		field.FieldType = registry.FieldTypeString
 	case descriptorpb.FieldDescriptorProto_TYPE_BOOL:
 		field.FieldType = registry.FieldTypeBool
+	case descriptorpb.FieldDescriptorProto_TYPE_INT64:
+		field.FieldType = registry.FieldTypeInt64
 	default:
 		// TODO
-		panic("unhandled type")
+		panic("unhandled type " + fieldDescriptorProto.GetType().String())
 	}
 	switch fieldDescriptorProto.GetLabel() {
 	case descriptorpb.FieldDescriptorProto_LABEL_REPEATED:

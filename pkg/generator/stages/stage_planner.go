@@ -34,7 +34,7 @@ func (s *stagePlanner) Plan(ctx *dsl.Context) stage.Stage {
 	o := orchestrator.New(ctx.Api, ctx.Meta)
 	adaptorContext := s.msgResolver.Resolve(ctx.Api, ctx.Meta, ctx.Output)
 	operationContexts := s.opResolver.Resolve(ctx.Api, ctx.Meta, adaptorContext, ctx.Operation)
-	_ = s.inputResolver.Resolve(ctx.Api, ctx.Meta, operationContexts)
+	_ = s.inputResolver.Resolve(ctx.Api, ctx.Meta, operationContexts, adaptorContext)
 	o.AddStages(resolveStageOrder(adaptorContext))
 	return o
 }
@@ -42,19 +42,27 @@ func (s *stagePlanner) Plan(ctx *dsl.Context) stage.Stage {
 func resolveStageOrder(finalStage stage.Stage) []stage.Stage {
 	var ret []stage.Stage
 	depChan := make(chan stage.Stage)
+	doneChan := make(chan struct{})
 	go func() {
 		for nextStage := range depChan {
 			ret = append(ret, nextStage)
 		}
+		doneChan <- struct{}{}
 	}()
-	traversePostOrder(finalStage, depChan)
+	doneStages := map[stage.Stage]struct{}{}
+	traversePostOrder(finalStage, depChan, doneStages)
 	close(depChan)
+	<-doneChan
 	return ret
 }
 
-func traversePostOrder(currentStage stage.Stage, depChan chan stage.Stage) {
+func traversePostOrder(currentStage stage.Stage, depChan chan stage.Stage, doneStages map[stage.Stage]struct{}) {
 	for _, s := range currentStage.GetStageDependencies() {
-		traversePostOrder(s, depChan)
+		if _, ok := doneStages[s]; ok {
+			continue
+		}
+		doneStages[s] = struct{}{}
+		traversePostOrder(s, depChan, doneStages)
 	}
 	depChan <- currentStage
 }

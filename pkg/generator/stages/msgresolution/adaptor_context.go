@@ -27,17 +27,15 @@ func (a *adaptorContext) GetStageDependencies() []stage.Stage {
 }
 
 func topLevelDeps(deps [][]fieldMessageDependency) []fieldMessageDependency {
-	tld := map[string]fieldMessageDependency{}
+	var ret []fieldMessageDependency
+	tld := map[string]struct{}{}
 	for _, dep := range deps {
 		if len(dep) > 0 {
 			if _, ok := tld[dep[0].fieldName]; !ok {
-				tld[dep[0].fieldName] = dep[0]
+				tld[dep[0].fieldName] = struct{}{}
+				ret = append(ret, dep[0])
 			}
 		}
-	}
-	var ret []fieldMessageDependency
-	for _, v := range tld {
-		ret = append(ret, v)
 	}
 	return ret
 }

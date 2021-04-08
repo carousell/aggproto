@@ -2,7 +2,7 @@ package simple_mask_v1
 
 import (
 	"context"
-
+	
 	"github.com/carousell/aggproto/examples/goOut/listing"
 )
 
@@ -17,7 +17,7 @@ func New(listings listing.ListingsClient) MaskedListingServiceServer {
 	}
 }
 
-func (s *maskedListingSvc) InvokeMaskedListing(ctx context.Context, req *MaskedListingRequest) (*MaskedListingResponse, error) {
+func (s *maskedListingSvc) InvokeMaskedListing(ctx context.Context, req *MaskedListingRequest) (*MaskedListingResponse, error){
 	getListingRequest := transformMaskedListingRequest(req)
 	getListingResponse, err := s.getListingClient.getListing(ctx, getListingRequest)
 	if err != nil {

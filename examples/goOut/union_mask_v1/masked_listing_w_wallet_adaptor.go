@@ -1,0 +1,22 @@
+package union_mask_v1
+
+import (
+	"github.com/carousell/aggproto/examples/goOut/listing"
+	"github.com/carousell/aggproto/examples/goOut/wallet"
+)
+
+func adaptMaskedListingWWalletResponse(getListingResponse *listing.GetListingResponse, getUserWalletResponse *wallet.GetUserWalletResponse) *MaskedListingWWalletResponse{
+	listing := getListingResponse.Listing
+	userWallet := getUserWalletResponse.UserWallet
+	resp := &MaskedListingWWalletResponse{}
+	resp.Listing = &MaskedListingWWalletResponse_ListingGen{}
+	resp.Listing.GetListingResponse = &MaskedListingWWalletResponse_ListingGen_GetListingResponseGen{}
+	resp.Listing.GetListingResponse.Listing = &MaskedListingWWalletResponse_ListingGen_GetListingResponseGen_ListingGen{}
+	resp.Listing.GetListingResponse.Listing.Title = listing.Title
+	resp.Listing.GetListingResponse.Listing.Description = listing.Description
+	resp.Wallet = &MaskedListingWWalletResponse_WalletGen{}
+	resp.Wallet.GetUserWalletResponse = &MaskedListingWWalletResponse_WalletGen_GetUserWalletResponseGen{}
+	resp.Wallet.GetUserWalletResponse.UserWallet = &MaskedListingWWalletResponse_WalletGen_GetUserWalletResponseGen_UserWalletGen{}
+	resp.Wallet.GetUserWalletResponse.UserWallet.CoinBalance = userWallet.CoinBalance
+	return resp
+}

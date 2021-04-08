@@ -2,6 +2,7 @@ package inresolution
 
 import (
 	"github.com/carousell/aggproto/pkg/dsl"
+	"github.com/carousell/aggproto/pkg/generator/stages/msgresolution"
 	"github.com/carousell/aggproto/pkg/generator/stages/opresolution"
 	"github.com/carousell/aggproto/pkg/registry"
 )
@@ -14,7 +15,7 @@ func New(r registry.Registry) InputResolver {
 	return &inResolver{r: r}
 }
 
-func (i *inResolver) Resolve(api dsl.ApiDescriptor, meta dsl.Meta, opCtxs []opresolution.OperationContext) *InputContext {
+func (i *inResolver) Resolve(api dsl.ApiDescriptor, meta dsl.Meta, opCtxs []opresolution.OperationContext, adaptorContext msgresolution.AdaptorContext) *InputContext {
 	requiredInputsMap := map[string]registry.Message{}
 	for _, op := range opCtxs {
 		msg := op.InputDependency()
@@ -27,8 +28,12 @@ func (i *inResolver) Resolve(api dsl.ApiDescriptor, meta dsl.Meta, opCtxs []opre
 		requiredInput = append(requiredInput, v)
 	}
 	inCtx := &InputContext{apiDescriptor: api, required: requiredInput, meta: meta}
-	for _, opCtx := range opCtxs {
-		opCtx.AddStageDependency(inCtx)
+	if len(opCtxs) > 0 {
+		for _, opCtx := range opCtxs {
+			opCtx.AddStageDependency(inCtx)
+		}
+	} else {
+		adaptorContext.AddStageDependency(inCtx)
 	}
 	return inCtx
 }

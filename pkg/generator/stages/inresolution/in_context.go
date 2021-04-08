@@ -71,7 +71,9 @@ func (i *InputContext) PrintCodeUsage(p printer.Printer) {
 	for _, r := range i.required {
 		retReferences = append(retReferences, strcase.ToLowerCamel(r.Name()))
 	}
-
+	if len(retReferences) == 0 {
+		return
+	}
 	p.P(strings.Join(retReferences, ", "), " := transform", strcase.ToCamel(i.apiDescriptor.Name()), "Request(req)")
 }
 func (i *InputContext) PrintCode(printerFactory printer.Factory) {
