@@ -4,6 +4,9 @@ api:
   version: 1
 meta:
   goPackage: github.com/carousell/aggproto/examples/goOut
+input:
+  - get_listing.id=listing.GetListingRequest.listing_id
+  - get_wallet.id=wallet.GetUserWalletRequest.user_id
 output:
   - listing.title=listing.GetListingResponse.listing.title
   - listing.description=listing.GetListingResponse.listing.description

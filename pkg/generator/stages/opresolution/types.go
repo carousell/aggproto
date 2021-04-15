@@ -19,4 +19,6 @@ type OperationContext interface {
 	RequiredImport() string
 	ClientDependency() string
 	PrintConstructorUsage(p printer.Printer)
+	Produces() registry.Message
+	Consumes() registry.Message
 }

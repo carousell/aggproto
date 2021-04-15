@@ -17,6 +17,14 @@ type opContext struct {
 	dependentStages []stage.Stage
 }
 
+func (o *opContext) Produces() registry.Message {
+	return o.operation.Output()
+}
+
+func (o *opContext) Consumes() registry.Message {
+	return o.operation.Input()
+}
+
 func (o *opContext) RequiredImport() string {
 	return fmt.Sprintf("%s/%s", o.meta.GoPackage, o.operation.Context().Package())
 }

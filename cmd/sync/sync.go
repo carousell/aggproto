@@ -39,7 +39,10 @@ func APIs(registryDir string, apiSpecDir string, protoOutDir string, goOutDir st
 		if er != nil {
 			return er
 		}
-		outFiles := gen.PlanAndGenerate(context)
+		outFiles, er := gen.PlanAndGenerate(context)
+		if er != nil {
+			return er
+		}
 		for fileName, fileContent := range outFiles {
 			var filePath string
 			if strings.HasSuffix(fileName, ".proto") {

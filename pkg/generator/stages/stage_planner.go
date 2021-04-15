@@ -11,7 +11,7 @@ import (
 )
 
 type StagePlanner interface {
-	Plan(ctx *dsl.Context) stage.Stage
+	Plan(ctx *dsl.Context) (stage.Stage, error)
 }
 
 func Planner(r registry.Registry) StagePlanner {
@@ -30,13 +30,16 @@ type stagePlanner struct {
 	inputResolver inresolution.InputResolver
 }
 
-func (s *stagePlanner) Plan(ctx *dsl.Context) stage.Stage {
+func (s *stagePlanner) Plan(ctx *dsl.Context) (stage.Stage, error) {
 	o := orchestrator.New(ctx.Api, ctx.Meta)
 	adaptorContext := s.msgResolver.Resolve(ctx.Api, ctx.Meta, ctx.Output)
 	operationContexts := s.opResolver.Resolve(ctx.Api, ctx.Meta, adaptorContext, ctx.Operation)
-	_ = s.inputResolver.Resolve(ctx.Api, ctx.Meta, operationContexts, adaptorContext)
+	_, er := s.inputResolver.Resolve(ctx.Api, ctx.Meta, ctx.Input, operationContexts, adaptorContext)
+	if er != nil {
+		return nil, er
+	}
 	o.AddStages(resolveStageOrder(adaptorContext))
-	return o
+	return o, nil
 }
 
 func resolveStageOrder(finalStage stage.Stage) []stage.Stage {

@@ -5,4 +5,5 @@ type Context struct {
 	Output    []FieldDescriptor
 	Operation OpDescriptor
 	Meta      Meta
+	Input     []ArgDescriptor
 }

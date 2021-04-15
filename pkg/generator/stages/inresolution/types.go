@@ -7,5 +7,5 @@ import (
 )
 
 type InputResolver interface {
-	Resolve(api dsl.ApiDescriptor, meta dsl.Meta, opCtxs []opresolution.OperationContext, context msgresolution.AdaptorContext) *InputContext
+	Resolve(api dsl.ApiDescriptor, meta dsl.Meta, input []dsl.ArgDescriptor, opCtxs []opresolution.OperationContext, context msgresolution.AdaptorContext) (*InputContext, error)
 }

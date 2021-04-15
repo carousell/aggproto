@@ -15,6 +15,10 @@ type ApiSpec struct {
 }
 
 func (s *ApiSpec) ToContext() (*Context, error) {
+	argDesc, err := parseArgDescriptors(s.Input...)
+	if err != nil {
+		return nil, err
+	}
 	return &Context{
 		Api: &apiDescriptor{
 			name:    s.Api.Name,
@@ -24,5 +28,6 @@ func (s *ApiSpec) ToContext() (*Context, error) {
 		Operation: OpDescriptor{AllowedOperations: s.Operations},
 		Output:    parseOutputFields(s.Output...),
 		Meta:      Meta{GoPackage: s.Meta.GoPackage},
+		Input:     argDesc,
 	}, nil
 }

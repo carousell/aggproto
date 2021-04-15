@@ -15,6 +15,7 @@ import (
 type InputContext struct {
 	apiDescriptor dsl.ApiDescriptor
 	required      []registry.Message
+	argUnits      []argUnit
 	meta          dsl.Meta
 }
 
@@ -26,41 +27,15 @@ func (i *InputContext) GetStageDependencies() []stage.Stage {
 	return nil
 }
 
-func printMessage(p printer.Printer, m registry.Message) {
-	p.P("message ", fmt.Sprintf("%sGen {", m.Name()))
-	p.Tab()
-	for _, subDef := range m.Definitions() {
-		printMessage(p, subDef)
-	}
-	for idx, f := range m.Fields() {
-		switch f.Type() {
-		case registry.FieldTypeString:
-			p.P("string ", f.Name(), " = ", idx+1, ";")
-		case registry.FieldTypeInt64:
-			p.P("int64 ", f.Name(), " = ", idx+1, ";")
-		case registry.FieldTypeDouble:
-			p.P("float64 ", f.Name(), " = ", idx+1, ";")
-		case registry.FieldTypeBool:
-			p.P("bool ", f.Name(), " = ", idx+1, ";")
-		case registry.FieldTypeMessage:
-			p.P(strcase.ToCamel(f.Name()), "Gen ", strcase.ToSnake(f.Name()), " = ", idx+1, ";")
-		default:
-			panic("unsupported type " + f.Name())
-		}
-	}
-	p.UnTab()
-	p.P("}")
-}
-
 func (i *InputContext) PrintProto(factory printer.Factory) {
 	p := factory.Get(fmt.Sprintf("%s.proto", i.apiDescriptor.FileName()))
 	p.P("message ", fmt.Sprintf("%sRequest", strcase.ToCamel(i.apiDescriptor.Name())), " {")
 	p.Tab()
-	for _, r := range i.required {
-		printMessage(p, r)
+	for idx, au := range i.argUnits {
+		au.printProtoDependency(p, idx)
 	}
-	for idx, r := range i.required {
-		p.P(r.Name(), "Gen ", strcase.ToSnake(r.Name()), " = ", idx+1, ";")
+	for idx, au := range i.argUnits {
+		au.printProtoUsage(p, idx)
 	}
 	p.UnTab()
 	p.P("}")
@@ -68,8 +43,16 @@ func (i *InputContext) PrintProto(factory printer.Factory) {
 
 func (i *InputContext) PrintCodeUsage(p printer.Printer) {
 	var retReferences []string
-	for _, r := range i.required {
-		retReferences = append(retReferences, strcase.ToLowerCamel(r.Name()))
+	done := map[registry.Message]struct{}{}
+	for _, au := range i.argUnits {
+		for _, msg := range au.produces() {
+			if _, ok := done[msg]; ok {
+				continue
+			}
+			done[msg]= struct{}{}
+			retReferences = append(retReferences, strcase.ToLowerCamel(msg.Name()))
+
+		}
 	}
 	if len(retReferences) == 0 {
 		return
@@ -81,37 +64,27 @@ func (i *InputContext) PrintCode(printerFactory printer.Factory) {
 	p.P("package ", i.apiDescriptor.Group(), "_v", i.apiDescriptor.Version())
 	reqClassName := fmt.Sprintf("%sRequest", strcase.ToCamel(i.apiDescriptor.Name()))
 	p.P()
-	prepareImports(p, i.meta, i.required)
+	prepareImports(p, i.meta, i.argUnits)
 	p.P()
-	p.P("func ", "transform", reqClassName, "(req *", reqClassName, ") ", prepareRequiredReturns(i.required), " {")
+	p.P("func ", "transform", reqClassName, "(req *", reqClassName, ") ", prepareRequiredReturns(i.argUnits), " {")
 	p.Tab()
 	var retReferences []string
-	for _, r := range i.required {
-		retReferences = append(retReferences, prepareRequired(p, r, fmt.Sprintf("req.%s", r.Name())))
+	done := map[registry.Message]struct{}{}
+	for _, au := range i.argUnits {
+		retReferences = append(retReferences, au.prepareRequired(p, "req", done)...)
+		//retReferences = append(retReferences, prepareRequired(p, r, fmt.Sprintf("req.%s", r.Name())))
 	}
 	p.P("return ", strings.Join(retReferences, ", "))
 	p.UnTab()
 	p.P("}")
 }
 
-func prepareRequired(p printer.Printer, msg registry.Message, referenceName string) string {
-	fieldName := strcase.ToLowerCamel(msg.Name())
-	p.P(fieldName, " := &", msg.Package(), ".", msg.Name(), "{}")
-	for _, f := range msg.Fields() {
-		switch f.Type() {
-		case registry.FieldTypeMessage:
-			prepareRequired(p, f.Message(), fmt.Sprintf("%s.%s", referenceName, f.Name()))
-		default:
-			p.P(fieldName, ".", strcase.ToCamel(f.Name()), " = ", referenceName, ".", strcase.ToCamel(f.Name()))
-		}
-	}
-	return fieldName
-}
-
-func prepareImports(p printer.Printer, meta dsl.Meta, required []registry.Message) {
+func prepareImports(p printer.Printer, meta dsl.Meta, argUnits []argUnit) {
 	packages := map[string]struct{}{}
-	for _, r := range required {
-		packages[r.Package()] = struct{}{}
+	for _, au := range argUnits {
+		for _, msg := range au.produces() {
+			packages[msg.Package()] = struct{}{}
+		}
 	}
 	if len(packages) > 0 {
 		p.P("import (")
@@ -124,17 +97,28 @@ func prepareImports(p printer.Printer, meta dsl.Meta, required []registry.Messag
 	}
 }
 
-func prepareRequiredReturns(required []registry.Message) string {
-	buf := new(bytes.Buffer)
-	if len(required) > 1 {
-		buf.WriteString("(")
+func prepareRequiredReturns(argUnits []argUnit) string {
+	if len(argUnits) == 0 {
+		return ""
 	}
 	var ret []string
-	for _, r := range required {
-		ret = append(ret, fmt.Sprintf("*%s.%s", r.Package(), r.Name()))
+	done := map[registry.Message]struct{}{}
+	for _, au := range argUnits {
+		for _, msg := range au.produces() {
+			if _, ok := done[msg]; ok {
+				continue
+			}
+			done[msg] = struct{}{}
+			ret = append(ret, fmt.Sprintf("*%s.%s", msg.Package(), msg.Name()))
+		}
+
+	}
+	buf := new(bytes.Buffer)
+	if len(ret) > 1 {
+		buf.WriteString("(")
 	}
 	buf.WriteString(strings.Join(ret, ", "))
-	if len(required) > 1 {
+	if len(ret) > 1 {
 		buf.WriteString(")")
 	}
 	return buf.String()

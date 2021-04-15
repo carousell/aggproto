@@ -15,12 +15,14 @@ func Generator(r registry.Registry) *generator {
 	return &generator{r: r}
 }
 
-func (g *generator) PlanAndGenerate(ctx *dsl.Context) map[string]string {
+func (g *generator) PlanAndGenerate(ctx *dsl.Context) (map[string]string, error) {
 	planner := stages.Planner(g.r)
-	plan := planner.Plan(ctx)
-
+	plan, er := planner.Plan(ctx)
+	if er!=nil{
+		return nil, er
+	}
 	printerFactory := printer.New()
 	plan.PrintProto(printerFactory)
 	plan.PrintCode(printerFactory)
-	return printerFactory.Out()
+	return printerFactory.Out(), nil
 }

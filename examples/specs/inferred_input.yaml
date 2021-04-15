@@ -1,0 +1,12 @@
+api:
+  name: masked_listing_w_media
+  group: inferred_input
+  version: 1
+meta:
+  goPackage: github.com/carousell/aggproto/examples/goOut
+input:
+  - media.GetMediaRequest.media_id<-listing.GetListingResponse.listing.media_id
+output:
+  - listing.title=listing.GetListingResponse.listing.title
+  - listing.description=listing.GetListingResponse.listing.description
+  - listing.photo_url=media.GetMediaResponse.media.photo_url

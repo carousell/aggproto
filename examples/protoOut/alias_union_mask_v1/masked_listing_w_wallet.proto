@@ -5,14 +5,14 @@ service MaskedListingWWalletService {
 	rpc InvokeMaskedListingWWallet (MaskedListingWWalletRequest) returns (MaskedListingWWalletResponse);
 }
 message MaskedListingWWalletRequest {
-	message GetListingRequestGen {
-		string listing_id = 1;
+	message GetListingGen {
+		string id = 1;
 	}
-	message GetUserWalletRequestGen {
-		string user_id = 1;
+	message GetWalletGen {
+		string id = 1;
 	}
-	GetListingRequestGen get_listing_request = 1;
-	GetUserWalletRequestGen get_user_wallet_request = 2;
+	GetListingGen get_listing = 1;
+	GetWalletGen get_wallet = 2;
 }
 message MaskedListingWWalletResponse {
 	message ListingGen {
