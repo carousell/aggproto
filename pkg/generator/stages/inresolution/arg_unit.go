@@ -72,13 +72,25 @@ func (u *nestedArgUnit) tryMerge(nau *nestedArgUnit) error {
 		return errors.New("cannot merge dis-similar nau")
 	}
 	for _, v := range nau.nestedArgs {
+		found := false
 		if fau, ok := v.(*fieldArgUnit); ok {
 			for _, au := range u.nestedArgs {
 				if fau.fieldName == au.getFieldName() {
-					return errors.New("cannot merge conflicting field arg unit")
+					if thisFau, ok := au.(*fieldArgUnit); ok {
+						if fau.fieldType == thisFau.fieldType {
+							thisFau.producerStack = append(thisFau.producerStack, fau.producerStack...)
+						} else {
+							return errors.New("field types mismatch")
+						}
+					} else {
+						return errors.New("cannot merge field arg unit with non field arg")
+					}
 				}
+				found = true
 			}
-			u.nestedArgs = append(u.nestedArgs, fau)
+			if !found{
+				u.nestedArgs = append(u.nestedArgs, fau)
+			}
 		} else if childNau, ok := v.(*nestedArgUnit); ok {
 			childFound := false
 			for _, au := range u.nestedArgs {
@@ -105,41 +117,48 @@ func (u *nestedArgUnit) tryMerge(nau *nestedArgUnit) error {
 
 type fieldArgUnit struct {
 	fieldName     string
-	fieldMsg      registry.Field
-	producerStack []fieldMessageDependency
+	fieldType     registry.FieldType
+	producerStack [][]fieldMessageDependency
 }
 
 func (f *fieldArgUnit) prepareRequired(p printer.Printer, refName string, done map[registry.Message]struct{}) []string {
 	var ret []string
-	for idx, fmd := range f.producerStack {
-		if _, ok := done[fmd.msg]; ok {
-			continue
-		}
-		p.P(strcase.ToLowerCamel(fmd.msg.Name()), " := &", fmd.msg.Package(), ".", fmd.msg.Name(), "{}")
-		done[fmd.msg] = struct{}{}
-		if idx == 0 {
-			ret = append(ret, strcase.ToLowerCamel(fmd.msg.Name()))
+	for _, fmds := range f.producerStack {
+		for idx, fmd := range fmds {
+			if _, ok := done[fmd.msg]; ok {
+				continue
+			}
+			p.P(strcase.ToLowerCamel(fmd.msg.Name()), " := &", fmd.msg.Package(), ".", fmd.msg.Name(), "{}")
+			done[fmd.msg] = struct{}{}
+			if idx == 0 {
+				ret = append(ret, strcase.ToLowerCamel(fmd.msg.Name()))
+			}
 		}
 	}
-	var retRef []string
-	for idx, fmd := range f.producerStack {
-		if idx == 0 {
-			retRef = append(retRef, strcase.ToLowerCamel(fmd.msg.Name()))
+	for _, fmds := range f.producerStack {
+		var retRef []string
+		for idx, fmd := range fmds {
+			if idx == 0 {
+				retRef = append(retRef, strcase.ToLowerCamel(fmd.msg.Name()))
+			}
+			retRef = append(retRef, strcase.ToCamel(fmd.fieldName))
+
 		}
-		retRef = append(retRef, strcase.ToCamel(fmd.fieldName))
+		p.P(strings.Join(retRef, "."), " = ", refName, ".", strcase.ToCamel(f.fieldName))
 	}
-	p.P(strings.Join(retRef, "."), " = ", refName, ".", strcase.ToCamel(f.fieldName))
 	return ret
 }
 
 func (f *fieldArgUnit) produces() []registry.Message {
-	return []registry.Message{
-		f.producerStack[0].msg,
+	var ret []registry.Message
+	for _, p := range f.producerStack {
+		ret = append(ret, p[0].msg)
 	}
+	return ret
 }
 
 func (f *fieldArgUnit) printProtoUsage(p printer.Printer, idx int) {
-	switch f.fieldMsg.Type() {
+	switch f.fieldType {
 	case registry.FieldTypeString:
 		p.P("string ", f.fieldName, " = ", idx+1, ";")
 	case registry.FieldTypeInt64:

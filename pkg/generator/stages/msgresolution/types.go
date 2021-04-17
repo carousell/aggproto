@@ -7,7 +7,7 @@ import (
 )
 
 type MessageResolver interface {
-	Resolve(apiDescriptor dsl.ApiDescriptor, meta dsl.Meta, messageFullName []dsl.FieldDescriptor) AdaptorContext
+	Resolve(apiDescriptor dsl.ApiDescriptor, meta dsl.Meta, messageFullName []dsl.FieldDescriptor) (AdaptorContext, error)
 }
 
 type AdaptorContext interface {

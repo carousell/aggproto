@@ -32,9 +32,12 @@ type stagePlanner struct {
 
 func (s *stagePlanner) Plan(ctx *dsl.Context) (stage.Stage, error) {
 	o := orchestrator.New(ctx.Api, ctx.Meta)
-	adaptorContext := s.msgResolver.Resolve(ctx.Api, ctx.Meta, ctx.Output)
+	adaptorContext, er := s.msgResolver.Resolve(ctx.Api, ctx.Meta, ctx.Output)
+	if er != nil {
+		return nil, er
+	}
 	operationContexts := s.opResolver.Resolve(ctx.Api, ctx.Meta, adaptorContext, ctx.Operation)
-	_, er := s.inputResolver.Resolve(ctx.Api, ctx.Meta, ctx.Input, operationContexts, adaptorContext)
+	_, er = s.inputResolver.Resolve(ctx.Api, ctx.Meta, ctx.Input, operationContexts, adaptorContext)
 	if er != nil {
 		return nil, er
 	}

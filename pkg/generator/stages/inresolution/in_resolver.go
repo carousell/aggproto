@@ -124,7 +124,8 @@ func explodeMessage(name string, msg registry.Message, producesStack []fieldMess
 		case registry.FieldTypeMessage:
 			au.nestedArgs = append(au.nestedArgs, explodeMessage(f.Name(), f.Message(), append(producesStack, fieldMessageDependency{msg, f.Name()})))
 		default:
-			au.nestedArgs = append(au.nestedArgs, &fieldArgUnit{fieldName: f.Name(), fieldMsg: f, producerStack: append(producesStack, fieldMessageDependency{msg, f.Name()})})
+			producesStack:=append(producesStack, fieldMessageDependency{msg, f.Name()})
+			au.nestedArgs = append(au.nestedArgs, &fieldArgUnit{fieldName: f.Name(), fieldType: f.Type(), producerStack: [][]fieldMessageDependency{producesStack}})
 		}
 	}
 	return au

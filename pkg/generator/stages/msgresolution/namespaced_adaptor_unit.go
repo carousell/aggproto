@@ -8,12 +8,14 @@ import (
 	"github.com/carousell/aggproto/pkg/generator/printer"
 	"github.com/carousell/aggproto/pkg/registry"
 	"github.com/iancoleman/strcase"
+	"github.com/pkg/errors"
 )
 
 type messageFieldAdaptorUnit struct {
 	underlying               registry.Field
 	fieldName                string
 	fieldMessageDependencies []fieldMessageDependency
+	repeated                 bool
 }
 
 func (m *messageFieldAdaptorUnit) isAdaptorUnit() {
@@ -45,7 +47,7 @@ func (m *messageFieldAdaptorUnit) dependencies() [][]fieldMessageDependency {
 	return [][]fieldMessageDependency{m.fieldMessageDependencies}
 }
 
-func makeNamespacedMessageAdaptorUnit(r registry.Registry, ofd *dsl.NamespacedMessageFieldDescriptor, ifd *dsl.NamespacedMessageFieldDescriptor) adaptorUnit {
+func makeNamespacedMessageAdaptorUnit(r registry.Registry, ofd *dsl.NamespacedMessageFieldDescriptor, ifd *dsl.NamespacedMessageFieldDescriptor) (adaptorUnit, error) {
 	msgs := r.ListMessages(registry.LMOWithPrefixMatch(ifd.NamespacedField))
 	if len(msgs) != 1 {
 		panic(fmt.Sprintf("No or more than one messages retrieved for %s", ifd.NamespacedField))
@@ -54,10 +56,15 @@ func makeNamespacedMessageAdaptorUnit(r registry.Registry, ofd *dsl.NamespacedMe
 	ifdSplits := strings.Split(ifd.NamespacedField, ".")
 	ofdSplits := strings.Split(ofd.NamespacedField, ".")
 
-	dependencyStack := []fieldMessageDependency{{msg.Name(), msg}}
+	dependencyStack := []fieldMessageDependency{{msg.Name(), msg, false}}
 	var resolvedField registry.Field
 	resolvedMsg := msg
 	for idx, fd := range ifdSplits {
+		repeated := false
+		if strings.HasSuffix(fd, "[]") {
+			repeated = true
+			fd = strings.Trim(fd, "[]")
+		}
 		found := false
 		// todo get unresolved tail from somewhere
 		if idx == 0 && resolvedMsg.Package() == fd {
@@ -69,6 +76,9 @@ func makeNamespacedMessageAdaptorUnit(r registry.Registry, ofd *dsl.NamespacedMe
 		for _, field := range resolvedMsg.Fields() {
 			if field.Name() == fd {
 				found = true
+				if (repeated || field.Repeated()) && !(repeated && field.Repeated()) {
+					return nil, errors.Errorf("repeated fields must be marked in ifd %s", ifd.NamespacedField)
+				}
 				if field.Type() != registry.FieldTypeMessage {
 					if idx != len(ifdSplits)-1 {
 						panic("partially resolved to a non message")
@@ -76,7 +86,7 @@ func makeNamespacedMessageAdaptorUnit(r registry.Registry, ofd *dsl.NamespacedMe
 					resolvedField = field
 				} else {
 					resolvedMsg = field.Message()
-					dependencyStack = append(dependencyStack, fieldMessageDependency{fieldName: field.Name(), message: resolvedMsg})
+					dependencyStack = append(dependencyStack, fieldMessageDependency{fieldName: field.Name(), message: resolvedMsg, repeated: field.Repeated()})
 				}
 				break
 			}
@@ -87,11 +97,23 @@ func makeNamespacedMessageAdaptorUnit(r registry.Registry, ofd *dsl.NamespacedMe
 	}
 	var unit adaptorUnit
 	if resolvedField != nil {
-		unit = &messageFieldAdaptorUnit{underlying: resolvedField, fieldName: ofdSplits[len(ofdSplits)-1], fieldMessageDependencies: dependencyStack}
-		for i := len(ofdSplits) - 2; i >= 0; i -= 1 {
-			unit = &nestedAdaptorUnit{fieldName: ofdSplits[i], nestedUnit: []adaptorUnit{unit}}
+		lastOfdSplit := ofdSplits[len(ofdSplits)-1]
+		repeated := false
+		if strings.HasSuffix(lastOfdSplit, "[]") {
+			repeated = true
+			lastOfdSplit = strings.Trim(lastOfdSplit, "[]")
 		}
-		return unit
+		unit = &messageFieldAdaptorUnit{underlying: resolvedField, fieldName: lastOfdSplit, fieldMessageDependencies: dependencyStack, repeated: repeated}
+		for i := len(ofdSplits) - 2; i >= 0; i -= 1 {
+			currSplit := ofdSplits[i]
+			repeated := false
+			if strings.HasSuffix(currSplit, "[]") {
+				repeated = true
+				currSplit = strings.Trim(currSplit, "[]")
+			}
+			unit = &nestedAdaptorUnit{fieldName: currSplit, nestedUnit: []adaptorUnit{unit}, repeated: repeated}
+		}
+		return unit, nil
 	}
 	// todo implement explode message
 	panic("unhandled case")

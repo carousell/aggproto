@@ -12,6 +12,7 @@ import (
 type fieldMessageDependency struct {
 	fieldName string
 	message   registry.Message
+	repeated  bool
 }
 type adaptorUnit interface {
 	isAdaptorUnit()
@@ -46,6 +47,7 @@ func (au adaptorUnits) tryMerge() adaptorUnits {
 type nestedAdaptorUnit struct {
 	fieldName  string
 	nestedUnit []adaptorUnit
+	repeated   bool
 }
 
 func (n *nestedAdaptorUnit) dependencies() [][]fieldMessageDependency {
@@ -66,7 +68,11 @@ func (n *nestedAdaptorUnit) printAsAdaptorCode(p printer.Printer, referenceName 
 }
 
 func (n *nestedAdaptorUnit) printAsProtoField(p printer.Printer, idx int) {
-	p.P(fmt.Sprintf("%sGen ", strcase.ToCamel(n.fieldName)), n.fieldName, " = ", idx, ";")
+	if n.repeated {
+		p.P("repeated ", fmt.Sprintf("%sGen ", strcase.ToCamel(n.fieldName)), n.fieldName, " = ", idx, ";")
+	} else {
+		p.P(fmt.Sprintf("%sGen ", strcase.ToCamel(n.fieldName)), n.fieldName, " = ", idx, ";")
+	}
 }
 
 func (n *nestedAdaptorUnit) printProtoDefinitions(p printer.Printer) {

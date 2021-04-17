@@ -16,8 +16,12 @@ message MaskedListingWWalletRequest {
 }
 message MaskedListingWWalletResponse {
 	message ListingGen {
+		message CommentsGen {
+			string title = 1;
+		}
 		string title = 1;
 		string description = 2;
+		repeated CommentsGen comments = 3;
 	}
 	message WalletGen {
 		int64 balance = 1;

@@ -181,7 +181,7 @@ func applyPiping(pipeArg *dsl.PipedArgDescriptor, units []argUnit, r registry.Re
 			if err != nil {
 				return nil, err
 			}
-			return &pipedFieldUnit{producerStack: fau.producerStack, depStack: depStack}, nil
+			return &pipedFieldUnit{producerStack: fau.producerStack[0], depStack: depStack}, nil
 		}
 	}
 

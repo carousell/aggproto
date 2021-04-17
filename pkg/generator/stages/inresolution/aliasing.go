@@ -21,7 +21,7 @@ func createFieldArgUnit(input string, fau *fieldArgUnit) argUnit {
 	var au argUnit
 	for i := len(splits) - 1; i >= 0; i-- {
 		if au == nil {
-			au = &fieldArgUnit{splits[i], fau.fieldMsg, fau.producerStack}
+			au = &fieldArgUnit{splits[i], fau.fieldType, fau.producerStack}
 		} else {
 			au = &nestedArgUnit{fieldName: splits[i], nestedArgs: []argUnit{au}}
 		}

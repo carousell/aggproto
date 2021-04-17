@@ -4,25 +4,32 @@ import (
 	"context"
 	
 	"github.com/carousell/aggproto/examples/goOut/listing"
+	"github.com/carousell/aggproto/examples/goOut/listing_comments"
 	"github.com/carousell/aggproto/examples/goOut/wallet"
 )
 
 type maskedListingWWalletSvc struct {
 	UnimplementedMaskedListingWWalletServiceServer
 	getListingClient *getListingClient
+	getListingCommentsClient *getListingCommentsClient
 	getUserWalletClient *getUserWalletClient
 }
 
-func New(listings listing.ListingsClient, wallet wallet.WalletClient) MaskedListingWWalletServiceServer {
+func New(listings listing.ListingsClient, listingComments listing_comments.ListingCommentsClient, wallet wallet.WalletClient) MaskedListingWWalletServiceServer {
 	return &maskedListingWWalletSvc{
 		getListingClient: &getListingClient{listings},
+		getListingCommentsClient: &getListingCommentsClient{listingComments},
 		getUserWalletClient: &getUserWalletClient{wallet},
 	}
 }
 
 func (s *maskedListingWWalletSvc) InvokeMaskedListingWWallet(ctx context.Context, req *MaskedListingWWalletRequest) (*MaskedListingWWalletResponse, error){
-	getListingRequest, getUserWalletRequest := transformMaskedListingWWalletRequest(req)
+	getListingRequest, getListingCommentsRequest, getUserWalletRequest := transformMaskedListingWWalletRequest(req)
 	getListingResponse, err := s.getListingClient.getListing(ctx, getListingRequest)
+	if err != nil {
+		return nil, err
+	}
+	getListingCommentsResponse, err := s.getListingCommentsClient.getListingComments(ctx, getListingCommentsRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -30,6 +37,6 @@ func (s *maskedListingWWalletSvc) InvokeMaskedListingWWallet(ctx context.Context
 	if err != nil {
 		return nil, err
 	}
-	resp := adaptMaskedListingWWalletResponse(getListingResponse, getUserWalletResponse)
+	resp := adaptMaskedListingWWalletResponse(getListingResponse, getListingCommentsResponse, getUserWalletResponse)
 	return resp, nil
 }
