@@ -69,6 +69,7 @@ func prepareImports(p printer.Printer, meta dsl.Meta, deps [][]fieldMessageDepen
 		}
 	}
 	if len(packages) > 0 {
+		p.P()
 		p.P("import (")
 		p.Tab()
 		for pkg, _ := range packages {
@@ -76,8 +77,9 @@ func prepareImports(p printer.Printer, meta dsl.Meta, deps [][]fieldMessageDepen
 		}
 		p.UnTab()
 		p.P(")")
+		p.P()
 	}
-	p.P()
+
 }
 
 func (a *adaptorContext) PrintCodeUsage(p printer.Printer) {
@@ -101,7 +103,6 @@ func (a *adaptorContext) PrintCode(printerFactory printer.Factory) {
 	for _, au := range a.adaptorUnits {
 		deps = append(deps, au.dependencies()...)
 	}
-	p.P()
 	prepareImports(p, a.meta, deps)
 	p.P("func ", "adapt", respClassName, "(", printTopLevelDependencies(deps), ") *", respClassName, "{")
 	p.Tab()

@@ -9,19 +9,19 @@ import (
 )
 
 var (
-	emptyTestExpected = `message EmptyTestResponse{
+	emptyTestExpected = `message EmptyTestResponse {
 }
 `
-	nestedPrimitiveExpected = `message NestedPrimitiveTestResponse{
-	message DefGen{
+	nestedPrimitiveExpected = `message NestedPrimitiveTestResponse {
+	message DefGen {
 		string field1 = 1;
 	}
 	DefGen def = 1;
 }
 `
-	namespacedMessageExpected = `message NamespacedMessageResponse{
-	message EntityAGen{
-		message EntityBField1Gen{
+	namespacedMessageExpected = `message NamespacedMessageResponse {
+	message EntityAGen {
+		message EntityBField1Gen {
 			string field_1 = 1;
 		}
 		EntityBField1Gen entity_b_field_1 = 1;
@@ -48,7 +48,7 @@ func Test_adaptorContext_PrintProto(t *testing.T) {
 				adaptorUnits:  nil,
 			},
 			want: map[string]string{
-				"adaptorTest_v1/emptyTest.go": emptyTestExpected,
+				"adaptorTest_v1/emptyTest.proto": emptyTestExpected,
 			},
 		},
 		{
@@ -68,7 +68,7 @@ func Test_adaptorContext_PrintProto(t *testing.T) {
 				},
 			},
 			want: map[string]string{
-				"adaptorTest_v1/nestedPrimitiveTest.go": nestedPrimitiveExpected,
+				"adaptorTest_v1/nestedPrimitiveTest.proto": nestedPrimitiveExpected,
 			},
 		},
 		{
@@ -93,7 +93,7 @@ func Test_adaptorContext_PrintProto(t *testing.T) {
 				},
 			},
 			want: map[string]string{
-				"adaptorTest_v1/namespacedMessage.go": namespacedMessageExpected,
+				"adaptorTest_v1/namespacedMessage.proto": namespacedMessageExpected,
 			},
 		},
 	}
@@ -106,8 +106,16 @@ func Test_adaptorContext_PrintProto(t *testing.T) {
 			}
 			a.PrintProto(p)
 			got := p.Out()
-			if diff := deep.Equal(got, tt.want); diff != nil {
-				t.Errorf("PrintCode() got %v want %v diff %s", got, tt.want, diff)
+
+			for k, v := range tt.want {
+				if _, ok := got[k]; !ok {
+					t.Errorf("Did not find key need %s", k)
+					t.Fail()
+				}
+				if diff := deep.Equal(got[k], v); diff != nil {
+					t.Errorf("PrintCode() got %v want %v diff %s", got, tt.want, diff)
+				}
+
 			}
 		})
 	}
@@ -115,31 +123,36 @@ func Test_adaptorContext_PrintProto(t *testing.T) {
 
 var (
 	emptyTestCodeExpected = `package adaptorTest_v1
-func AdaptEmptyTestResponse() *EmptyTestResponse{
+func adaptEmptyTestResponse() *EmptyTestResponse{
 	resp := &EmptyTestResponse{}
 	return resp
 }
 `
 	nestedPrimitiveCodeExpected = `package adaptorTest_v1
-func AdaptNestedPrimitiveTestResponse() *NestedPrimitiveTestResponse{
+func adaptNestedPrimitiveTestResponse() *NestedPrimitiveTestResponse{
 	resp := &NestedPrimitiveTestResponse{}
-	resp.Def = &DefGen{}
+	resp.Def = &NestedPrimitiveTestResponse_DefGen{}
 	resp.Def.Field1 = "hello"
 	return resp
 }
 `
 	namespacedMessageCodeExpected = `package adaptorTest_v1
-func AdaptNamespacedMessageResponse(entityA *pkg_a.EntityA) *NamespacedMessageResponse{
+
+import (
+	"test/pkg_a"
+)
+
+func adaptNamespacedMessageResponse(entityA *pkg_a.EntityA) *NamespacedMessageResponse{
 	entityBField1 := entityA.entityBField1
 	resp := &NamespacedMessageResponse{}
-	resp.EntityA = &EntityAGen{}
-	resp.EntityA.EntityBField1 = &EntityBField1Gen{}
+	resp.EntityA = &NamespacedMessageResponse_EntityAGen{}
+	resp.EntityA.EntityBField1 = &NamespacedMessageResponse_EntityAGen_EntityBField1Gen{}
 	resp.EntityA.EntityBField1.Field1 = entityBField1.Field1
 	return resp
 }
 `
 	namespacedComposedHybridExpected = `package adaptorTest_v1
-func AdaptNamespacedComposedHybridResponse(entityA *pkg_a.EntityA, entityC *pkg_a.EntityC) *NamespacedComposedHybridResponse{
+func adaptNamespacedComposedHybridResponse(entityA *pkg_a.EntityA, entityC *pkg_a.EntityC) *NamespacedComposedHybridResponse{
 	entityBField1 := entityA.entityBField1
 	resp := &NamespacedComposedHybridResponse{}
 	resp.PkgA = &PkgAGen{}
@@ -171,7 +184,7 @@ func Test_adaptorContext_PrintCode(t *testing.T) {
 				adaptorUnits:  nil,
 			},
 			want: map[string]string{
-				"adaptorTest_v1/emptyTest.proto": emptyTestCodeExpected,
+				"adaptorTest_v1/emptyTest_adaptor.go": emptyTestCodeExpected,
 			},
 		},
 		{
@@ -191,7 +204,7 @@ func Test_adaptorContext_PrintCode(t *testing.T) {
 				},
 			},
 			want: map[string]string{
-				"adaptorTest_v1/nestedPrimitiveTest.proto": nestedPrimitiveCodeExpected,
+				"adaptorTest_v1/nestedPrimitiveTest_adaptor.go": nestedPrimitiveCodeExpected,
 			},
 		},
 		{
@@ -210,10 +223,10 @@ func Test_adaptorContext_PrintCode(t *testing.T) {
 										underlying: testBasicNestedEntityBMockMessage.MessageFields[0],
 										fieldMessageDependencies: []fieldMessageDependency{
 											{
-												"entity_a", testBasicNestedMockMessage,
+												"entity_a", testBasicNestedMockMessage, false,
 											},
 											{
-												"entity_b_field_1", testBasicNestedEntityBMockMessage,
+												"entity_b_field_1", testBasicNestedEntityBMockMessage, false,
 											},
 										},
 									},
@@ -224,7 +237,7 @@ func Test_adaptorContext_PrintCode(t *testing.T) {
 				},
 			},
 			want: map[string]string{
-				"adaptorTest_v1/namespacedMessage.proto": namespacedMessageCodeExpected,
+				"adaptorTest_v1/namespacedMessage_adaptor.go": namespacedMessageCodeExpected,
 			},
 		},
 		{
@@ -245,15 +258,15 @@ func Test_adaptorContext_PrintCode(t *testing.T) {
 												fieldName:  "field_1",
 												underlying: testBasicNestedEntityBMockMessage.MessageFields[0],
 												fieldMessageDependencies: []fieldMessageDependency{
-													{"entity_a", testBasicNestedMockMessage},
-													{"entity_b_field_1", testBasicNestedEntityBMockMessage},
+													{"entity_a", testBasicNestedMockMessage, false},
+													{"entity_b_field_1", testBasicNestedEntityBMockMessage, false},
 												},
 											},
 											&messageFieldAdaptorUnit{
 												fieldName:  "new_field_1",
 												underlying: testComposedNestedWithPrimitiveMock.MessageFields[0],
 												fieldMessageDependencies: []fieldMessageDependency{
-													{"entity_c", testComposedNestedWithPrimitiveMock},
+													{"entity_c", testComposedNestedWithPrimitiveMock, false},
 												},
 											},
 											&staticPrimitiveAdaptorUnit{
@@ -269,7 +282,7 @@ func Test_adaptorContext_PrintCode(t *testing.T) {
 				},
 			},
 			want: map[string]string{
-				"adaptorTest_v1/namespacedComposedHybrid.proto": namespacedComposedHybridExpected,
+				"adaptorTest_v1/namespacedComposedHybrid_adaptor.go": namespacedComposedHybridExpected,
 			},
 		},
 	}
@@ -279,12 +292,17 @@ func Test_adaptorContext_PrintCode(t *testing.T) {
 			a := &adaptorContext{
 				apiDescriptor: tt.fields.apiDescriptor,
 				adaptorUnits:  tt.fields.adaptorUnits,
+				meta:          dsl.Meta{GoPackage: "test"},
 			}
 			a.PrintCode(factory)
 
 			got := factory.Out()
-			if diff := deep.Equal(got, tt.want); diff != nil {
-				t.Errorf("PrintCode() got %v want %v diff %s", got, tt.want, diff)
+			for filename, body := range tt.want {
+				if gotBody, ok := got[filename]; ok {
+					if diff := deep.Equal(body, gotBody); diff != nil {
+						t.Errorf(" got %s want %s diff %v", gotBody, body, diff)
+					}
+				}
 			}
 		})
 	}

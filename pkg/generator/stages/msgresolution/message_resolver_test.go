@@ -151,16 +151,16 @@ func Test_msgResolver_Resolve(t *testing.T) {
 												fieldName:  "field_1",
 												underlying: testBasicNestedEntityBMockMessage.MessageFields[0],
 												fieldMessageDependencies: []fieldMessageDependency{
-													{"entity_a", testBasicNestedMockMessage},
-													{"entity_b_field_1", testBasicNestedEntityBMockMessage},
+													{"entity_a", testBasicNestedMockMessage, false},
+													{"entity_b_field_1", testBasicNestedEntityBMockMessage, false},
 												},
 											},
 											&messageFieldAdaptorUnit{
 												fieldName:  "field_2",
 												underlying: testBasicNestedEntityBMockMessage.MessageFields[1],
 												fieldMessageDependencies: []fieldMessageDependency{
-													{"entity_a", testBasicNestedMockMessage},
-													{"entity_b_field_1", testBasicNestedEntityBMockMessage},
+													{"entity_a", testBasicNestedMockMessage, false},
+													{"entity_b_field_1", testBasicNestedEntityBMockMessage, false},
 												},
 											},
 										},
@@ -202,15 +202,15 @@ func Test_msgResolver_Resolve(t *testing.T) {
 												fieldName:  "field_1",
 												underlying: testBasicNestedEntityBMockMessage.MessageFields[0],
 												fieldMessageDependencies: []fieldMessageDependency{
-													{"entity_a", testBasicNestedMockMessage},
-													{"entity_b_field_1", testBasicNestedEntityBMockMessage},
+													{"entity_a", testBasicNestedMockMessage, false},
+													{"entity_b_field_1", testBasicNestedEntityBMockMessage, false},
 												},
 											},
 											&messageFieldAdaptorUnit{
 												fieldName:  "new_field_1",
 												underlying: testComposedNestedWithPrimitiveMock.MessageFields[0],
 												fieldMessageDependencies: []fieldMessageDependency{
-													{"entity_c", testComposedNestedWithPrimitiveMock},
+													{"entity_c", testComposedNestedWithPrimitiveMock, false},
 												},
 											},
 											&staticPrimitiveAdaptorUnit{
@@ -232,7 +232,7 @@ func Test_msgResolver_Resolve(t *testing.T) {
 			m := &msgResolver{
 				r: tt.fields.r,
 			}
-			got, _ := m.Resolve(api, tt.args.fds, )
+			got, _ := m.Resolve(api, dsl.Meta{}, tt.args.fds, )
 			if diff := deep.Equal(got, tt.want); diff != nil {
 				t.Error(diff)
 			}

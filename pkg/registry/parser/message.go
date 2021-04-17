@@ -60,7 +60,7 @@ func parseMessage(r registry.Registry, packageName string, msgType *descriptorpb
 	}
 	var definitions []*MessageContainer
 	for _, dp := range msgType.NestedType {
-		subMsg := parseMessage(r, fmt.Sprintf("%s.%s", packageName, msgType.GetName()), dp)
+		subMsg := parseMessage(r, packageName, dp)
 		subMsg.MessageParent = msg
 		if subMsg != nil {
 			definitions = append(definitions, subMsg)
