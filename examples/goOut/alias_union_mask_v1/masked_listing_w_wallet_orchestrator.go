@@ -15,7 +15,7 @@ type maskedListingWWalletSvc struct {
 	getUserWalletClient *getUserWalletClient
 }
 
-func New(listingComments listing_comments.ListingCommentsClient, wallet wallet.WalletClient, listings listing.ListingsClient) MaskedListingWWalletServiceServer {
+func New(listings listing.ListingsClient, listingComments listing_comments.ListingCommentsClient, wallet wallet.WalletClient) MaskedListingWWalletServiceServer {
 	return &maskedListingWWalletSvc{
 		getListingClient: &getListingClient{listings},
 		getListingCommentsClient: &getListingCommentsClient{listingComments},

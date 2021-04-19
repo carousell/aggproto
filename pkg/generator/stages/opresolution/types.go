@@ -15,6 +15,7 @@ type OperationResolver interface {
 type OperationContext interface {
 	stage.Stage
 	InputDependency() registry.Message
+	// splitting the interface ?
 	ClientReferenceName() string
 	RequiredImport() string
 	ClientDependency() string

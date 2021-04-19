@@ -6,7 +6,7 @@ import (
 	"github.com/carousell/aggproto/examples/goOut/wallet"
 )
 
-func adaptMaskedListingWWalletResponse(getListingResponse *listing.GetListingResponse, getListingCommentsResponse *listing_comments.GetListingCommentsResponse, getUserWalletResponse *wallet.GetUserWalletResponse) *MaskedListingWWalletResponse {
+func adaptMaskedListingWWalletResponse(getListingResponse *listing.GetListingResponse, getListingCommentsResponse *listing_comments.GetListingCommentsResponse, getUserWalletResponse *wallet.GetUserWalletResponse) *MaskedListingWWalletResponse{
 	resp := &MaskedListingWWalletResponse{}
 	resp.Listing = &MaskedListingWWalletResponse_ListingGen{}
 	resp.Listing.Title = getListingResponse.Listing.Title
