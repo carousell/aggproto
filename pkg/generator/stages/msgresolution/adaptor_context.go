@@ -95,7 +95,7 @@ func (a *adaptorContext) PrintCodeUsage(p printer.Printer) {
 	paramString := strings.Join(params, ", ")
 	p.P("resp := adapt", strcase.ToCamel(a.apiDescriptor.Name()), "Response(", paramString, ")")
 }
-func (a *adaptorContext) PrintCode(printerFactory printer.Factory) {
+func (a *adaptorContext) PrintCode(printerFactory printer.Factory) error {
 	p := printerFactory.Get(fmt.Sprintf("%s_adaptor.go", a.apiDescriptor.FileName()))
 	p.P("package ", a.apiDescriptor.Group(), "_v", a.apiDescriptor.Version())
 	respClassName := fmt.Sprintf("%sResponse", strcase.ToCamel(a.apiDescriptor.Name()))
@@ -106,14 +106,18 @@ func (a *adaptorContext) PrintCode(printerFactory printer.Factory) {
 	prepareImports(p, a.meta, deps)
 	p.P("func ", "adapt", respClassName, "(", printTopLevelDependencies(deps), ") *", respClassName, "{")
 	p.Tab()
-	prepareDependencies(p, deps)
+	//prepareDependencies(p, deps)
 	p.P("resp := &", respClassName, "{}")
 	for _, au := range a.adaptorUnits {
-		au.printAsAdaptorCode(p, "resp", []string{respClassName})
+		er := au.printAsAdaptorCode(p, "resp", []string{respClassName}, nil)
+		if er != nil {
+			return er
+		}
 	}
 	p.P("return resp")
 	p.UnTab()
 	p.P("}")
+	return nil
 }
 
 func (a *adaptorContext) PrintProto(printerFactory printer.Factory) {

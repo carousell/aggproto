@@ -59,7 +59,7 @@ type pipedContext struct {
 func (pc *pipedContext) PrintProto(printer.Factory) {
 }
 
-func (pc *pipedContext) PrintCode(printerFactory printer.Factory) {
+func (pc *pipedContext) PrintCode(printerFactory printer.Factory) error {
 	p := printerFactory.Get(fmt.Sprintf("%s_transformer.go", pc.api.FileName()))
 	p.P("package ", pc.api.Group(), "_v", pc.api.Version())
 	preparePipedImports(p, pc.meta, pc.producesMsg, pc.dependencies())
@@ -79,6 +79,7 @@ func (pc *pipedContext) PrintCode(printerFactory printer.Factory) {
 	p.UnTab()
 	p.P("}")
 
+	return nil
 }
 
 func preparePipedImports(p printer.Printer, meta dsl.Meta, msg registry.Message, dependencies []registry.Message) {

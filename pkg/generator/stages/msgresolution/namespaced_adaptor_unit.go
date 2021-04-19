@@ -18,6 +18,22 @@ type messageFieldAdaptorUnit struct {
 	repeated                 bool
 }
 
+func (m *messageFieldAdaptorUnit) getRepeatedSizeString() (string, error) {
+	var refs []string
+	for idx, fmd := range m.fieldMessageDependencies {
+		if idx == 0 {
+			refs = append(refs, strcase.ToLowerCamel(fmd.fieldName))
+		} else {
+			refs = append(refs, strcase.ToCamel(fmd.fieldName))
+		}
+
+		if fmd.repeated {
+			return fmt.Sprintf("len(%s)", strings.Join(refs, ".")), nil
+		}
+	}
+	return "", errors.Errorf("No repeated found")
+}
+
 func (m *messageFieldAdaptorUnit) isAdaptorUnit() {
 	panic("should never be called")
 }
@@ -38,9 +54,25 @@ func (m *messageFieldAdaptorUnit) printAsProtoField(p printer.Printer, idx int) 
 	}
 }
 
-func (m *messageFieldAdaptorUnit) printAsAdaptorCode(p printer.Printer, referenceName string, parents []string) {
-	fieldName := strcase.ToLowerCamel(m.fieldMessageDependencies[len(m.fieldMessageDependencies)-1].fieldName)
-	p.P(referenceName, ".", strcase.ToCamel(m.fieldName), " = ", fieldName, ".", strcase.ToCamel(m.underlying.Name()))
+func (m *messageFieldAdaptorUnit) printAsAdaptorCode(p printer.Printer, referenceName string, parents []string, repeatedStringIdxRef []string) error {
+	var refNames []string
+	repeatedStringIdx := -1
+	for idx, fmd := range m.fieldMessageDependencies {
+		var refName string
+		if idx == 0 {
+			refName = strcase.ToLowerCamel(fmd.fieldName)
+		} else {
+			refName = strcase.ToCamel(fmd.fieldName)
+		}
+		if fmd.repeated {
+			repeatedStringIdx += 1
+			refNames = append(refNames, fmt.Sprintf("%s[%s]", refName, repeatedStringIdxRef[repeatedStringIdx]))
+		} else {
+			refNames = append(refNames, refName)
+		}
+	}
+	p.P(referenceName, ".", strcase.ToCamel(m.fieldName), " = ", strings.Join(refNames, "."), ".", strcase.ToCamel(m.underlying.Name()))
+	return nil
 }
 
 func (m *messageFieldAdaptorUnit) dependencies() [][]fieldMessageDependency {

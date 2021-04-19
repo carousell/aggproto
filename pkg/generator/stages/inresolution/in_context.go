@@ -59,7 +59,7 @@ func (i *InputContext) PrintCodeUsage(p printer.Printer) {
 	}
 	p.P(strings.Join(retReferences, ", "), " := transform", strcase.ToCamel(i.apiDescriptor.Name()), "Request(req)")
 }
-func (i *InputContext) PrintCode(printerFactory printer.Factory) {
+func (i *InputContext) PrintCode(printerFactory printer.Factory) error {
 	p := printerFactory.Get(fmt.Sprintf("%s_input.go", i.apiDescriptor.FileName()))
 	p.P("package ", i.apiDescriptor.Group(), "_v", i.apiDescriptor.Version())
 	reqClassName := fmt.Sprintf("%sRequest", strcase.ToCamel(i.apiDescriptor.Name()))
@@ -77,6 +77,7 @@ func (i *InputContext) PrintCode(printerFactory printer.Factory) {
 	p.P("return ", strings.Join(retReferences, ", "))
 	p.UnTab()
 	p.P("}")
+	return nil
 }
 
 func prepareImports(p printer.Printer, meta dsl.Meta, argUnits []argUnit) {

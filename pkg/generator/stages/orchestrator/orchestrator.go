@@ -56,7 +56,7 @@ func (o *orchestrator) PrintProto(factory printer.Factory) {
 	}
 }
 
-func (o *orchestrator) PrintCode(factory printer.Factory) {
+func (o *orchestrator) PrintCode(factory printer.Factory) error {
 	n := o.api.Name()
 	higherN := strcase.ToCamel(n)
 	lowerN := strcase.ToLowerCamel(n)
@@ -102,6 +102,7 @@ func (o *orchestrator) PrintCode(factory printer.Factory) {
 	for _, s := range o.stages {
 		s.PrintCode(factory)
 	}
+	return nil
 }
 
 func getClientDependencies(stages []stage.Stage) []string {

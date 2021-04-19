@@ -13,11 +13,15 @@ type staticPrimitiveAdaptorUnit struct {
 	primitiveFD dsl.PrimitiveFieldDescriptor
 }
 
+func (s *staticPrimitiveAdaptorUnit) getRepeatedSizeString() (string, error) {
+	return "", nil
+}
+
 func (s *staticPrimitiveAdaptorUnit) dependencies() [][]fieldMessageDependency {
 	return nil
 }
 
-func (s *staticPrimitiveAdaptorUnit) printAsAdaptorCode(p printer.Printer, referenceName string, parents []string) {
+func (s *staticPrimitiveAdaptorUnit) printAsAdaptorCode(p printer.Printer, referenceName string, parents []string, repeatedStringIdxRef []string) error {
 	fieldName := strcase.ToCamel(s.fieldName)
 	switch fd := s.primitiveFD.(type) {
 	case *dsl.StringValueFieldDescriptor:
@@ -30,6 +34,7 @@ func (s *staticPrimitiveAdaptorUnit) printAsAdaptorCode(p printer.Printer, refer
 		p.P(referenceName, ".", fieldName, " = ", fd.Value)
 	}
 
+	return nil
 }
 
 func (s *staticPrimitiveAdaptorUnit) printAsProtoField(p printer.Printer, fieldIdx int) {

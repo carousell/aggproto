@@ -13,7 +13,7 @@ type maskedListingWMediaSvc struct {
 	getMediaClient *getMediaClient
 }
 
-func New(mediaService media.MediaServiceClient, listings listing.ListingsClient) MaskedListingWMediaServiceServer {
+func New(listings listing.ListingsClient, mediaService media.MediaServiceClient) MaskedListingWMediaServiceServer {
 	return &maskedListingWMediaSvc{
 		getListingClient: &getListingClient{listings},
 		getMediaClient: &getMediaClient{mediaService},

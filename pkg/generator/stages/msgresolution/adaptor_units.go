@@ -7,6 +7,7 @@ import (
 	"github.com/carousell/aggproto/pkg/generator/printer"
 	"github.com/carousell/aggproto/pkg/registry"
 	"github.com/iancoleman/strcase"
+	"github.com/pkg/errors"
 )
 
 type fieldMessageDependency struct {
@@ -18,8 +19,9 @@ type adaptorUnit interface {
 	isAdaptorUnit()
 	printProtoDefinitions(p printer.Printer)
 	printAsProtoField(p printer.Printer, idx int)
-	printAsAdaptorCode(p printer.Printer, referenceName string, parents []string)
+	printAsAdaptorCode(p printer.Printer, referenceName string, parents []string, repeatedStringIdxRef []string) error
 	dependencies() [][]fieldMessageDependency
+	getRepeatedSizeString() (string, error)
 }
 
 type adaptorUnits []adaptorUnit
@@ -50,6 +52,30 @@ type nestedAdaptorUnit struct {
 	repeated   bool
 }
 
+func (n *nestedAdaptorUnit) getRepeatedSizeString() (string, error) {
+	var repeatedSizeStr string
+	for _, au := range n.nestedUnit {
+		rss, er := au.getRepeatedSizeString()
+		if er != nil {
+			return "", er
+		}
+		if rss == "" {
+			continue
+		}
+		if repeatedSizeStr == "" {
+			repeatedSizeStr = rss
+		} else {
+			if rss != repeatedSizeStr {
+				return "", errors.Errorf("repeated size string mismatch")
+			}
+		}
+	}
+	if repeatedSizeStr == "" {
+		return "", errors.Errorf("No repeated field found")
+	}
+	return repeatedSizeStr, nil
+}
+
 func (n *nestedAdaptorUnit) dependencies() [][]fieldMessageDependency {
 	var deps [][]fieldMessageDependency
 	for _, nu := range n.nestedUnit {
@@ -58,13 +84,37 @@ func (n *nestedAdaptorUnit) dependencies() [][]fieldMessageDependency {
 	return deps
 }
 
-func (n *nestedAdaptorUnit) printAsAdaptorCode(p printer.Printer, referenceName string, parents []string) {
+func (n *nestedAdaptorUnit) printAsAdaptorCode(p printer.Printer, referenceName string, parents []string, repeatedStringIdxRef []string) error {
 	fieldName := strcase.ToCamel(n.fieldName)
 	parentName := strings.Join(parents, "_")
-	p.P(referenceName, ".", fieldName, " = &", parentName, "_", fieldName, "Gen{}")
-	for _, au := range n.nestedUnit {
-		au.printAsAdaptorCode(p, fmt.Sprintf("%s.%s", referenceName, fieldName), append(parents, fmt.Sprintf("%sGen", fieldName)))
+	if n.repeated {
+		rss, err := n.getRepeatedSizeString()
+		if err != nil {
+			return err
+		}
+		p.P(referenceName, ".", fieldName, " = make([]*", parentName, "_", fieldName, "Gen, ", rss, ")")
+		p.P("for i := 0; i < ", rss, "; i++ {")
+		p.Tab()
+		p.P(referenceName, ".", fieldName, "[i] = &", parentName, "_", fieldName, "Gen{}")
+		for _, au := range n.nestedUnit {
+			err := au.printAsAdaptorCode(p, fmt.Sprintf("%s.%s[i]", referenceName, fieldName), append(parents, fmt.Sprintf("%sGen", fieldName)), append(repeatedStringIdxRef, "i"))
+			if err != nil {
+				return err
+			}
+		}
+		p.UnTab()
+		p.P("}")
+	} else {
+		p.P(referenceName, ".", fieldName, " = &", parentName, "_", fieldName, "Gen{}")
+		for _, au := range n.nestedUnit {
+			err := au.printAsAdaptorCode(p, fmt.Sprintf("%s.%s", referenceName, fieldName), append(parents, fmt.Sprintf("%sGen", fieldName)), repeatedStringIdxRef)
+			if err != nil {
+				return err
+			}
+		}
+
 	}
+	return nil
 }
 
 func (n *nestedAdaptorUnit) printAsProtoField(p printer.Printer, idx int) {

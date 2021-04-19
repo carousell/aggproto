@@ -13,7 +13,7 @@ type maskedListingWWalletSvc struct {
 	getUserWalletClient *getUserWalletClient
 }
 
-func New(wallet wallet.WalletClient, listings listing.ListingsClient) MaskedListingWWalletServiceServer {
+func New(listings listing.ListingsClient, wallet wallet.WalletClient) MaskedListingWWalletServiceServer {
 	return &maskedListingWWalletSvc{
 		getListingClient: &getListingClient{listings},
 		getUserWalletClient: &getUserWalletClient{wallet},
@@ -21,7 +21,7 @@ func New(wallet wallet.WalletClient, listings listing.ListingsClient) MaskedList
 }
 
 func (s *maskedListingWWalletSvc) InvokeMaskedListingWWallet(ctx context.Context, req *MaskedListingWWalletRequest) (*MaskedListingWWalletResponse, error){
-	getUserWalletRequest, getListingRequest := transformMaskedListingWWalletRequest(req)
+	getListingRequest, getUserWalletRequest := transformMaskedListingWWalletRequest(req)
 	getListingResponse, err := s.getListingClient.getListing(ctx, getListingRequest)
 	if err != nil {
 		return nil, err

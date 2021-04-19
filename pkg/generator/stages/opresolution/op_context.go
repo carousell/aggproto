@@ -62,7 +62,7 @@ func (o *opContext) PrintCodeUsage(p printer.Printer) {
 func (o *opContext) PrintProto(p printer.Factory) {
 }
 
-func (o *opContext) PrintCode(printerFactory printer.Factory) {
+func (o *opContext) PrintCode(printerFactory printer.Factory) error {
 	p := printerFactory.Get(fmt.Sprintf("%s_%s_operation.go", o.api.FileName(), strcase.ToSnake(o.operation.Name())))
 	p.P("package ", o.api.Group(), "_v", o.api.Version())
 	p.P()
@@ -87,6 +87,7 @@ func (o *opContext) PrintCode(printerFactory printer.Factory) {
 	p.P("return resp, nil")
 	p.UnTab()
 	p.P("}")
+	return nil
 }
 
 func prepareImports(p printer.Printer, meta dsl.Meta, operation registry.UnaryOperation) {

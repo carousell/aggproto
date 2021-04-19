@@ -6,17 +6,15 @@ import (
 )
 
 func adaptMaskedListingWWalletResponse(getListingResponse *listing.GetListingResponse, getUserWalletResponse *wallet.GetUserWalletResponse) *MaskedListingWWalletResponse{
-	listing := getListingResponse.Listing
-	userWallet := getUserWalletResponse.UserWallet
 	resp := &MaskedListingWWalletResponse{}
 	resp.Listing = &MaskedListingWWalletResponse_ListingGen{}
 	resp.Listing.GetListingResponse = &MaskedListingWWalletResponse_ListingGen_GetListingResponseGen{}
 	resp.Listing.GetListingResponse.Listing = &MaskedListingWWalletResponse_ListingGen_GetListingResponseGen_ListingGen{}
-	resp.Listing.GetListingResponse.Listing.Title = listing.Title
-	resp.Listing.GetListingResponse.Listing.Description = listing.Description
+	resp.Listing.GetListingResponse.Listing.Title = getListingResponse.Listing.Title
+	resp.Listing.GetListingResponse.Listing.Description = getListingResponse.Listing.Description
 	resp.Wallet = &MaskedListingWWalletResponse_WalletGen{}
 	resp.Wallet.GetUserWalletResponse = &MaskedListingWWalletResponse_WalletGen_GetUserWalletResponseGen{}
 	resp.Wallet.GetUserWalletResponse.UserWallet = &MaskedListingWWalletResponse_WalletGen_GetUserWalletResponseGen_UserWalletGen{}
-	resp.Wallet.GetUserWalletResponse.UserWallet.CoinBalance = userWallet.CoinBalance
+	resp.Wallet.GetUserWalletResponse.UserWallet.CoinBalance = getUserWalletResponse.UserWallet.CoinBalance
 	return resp
 }
