@@ -18,11 +18,14 @@ func Generator(r registry.Registry) *generator {
 func (g *generator) PlanAndGenerate(ctx *dsl.Context) (map[string]string, error) {
 	planner := stages.Planner(g.r)
 	plan, er := planner.Plan(ctx)
-	if er!=nil{
+	if er != nil {
 		return nil, er
 	}
 	printerFactory := printer.New()
 	plan.PrintProto(printerFactory)
-	plan.PrintCode(printerFactory)
+	er = plan.PrintCode(printerFactory)
+	if er != nil {
+		return nil, er
+	}
 	return printerFactory.Out(), nil
 }

@@ -5,6 +5,5 @@ import (
 )
 func transformToGetMediaRequest(getListingResponse *listing.GetListingResponse) *media.GetMediaRequest{
 	getMediaRequest := &media.GetMediaRequest{}
-	getMediaRequest.MediaId = getListingResponse.Listing.MediaId
 	return getMediaRequest
 }

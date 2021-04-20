@@ -22,6 +22,7 @@ type nestedArgUnit struct {
 	fieldName  string
 	nestedArgs []argUnit
 	ctx        registry.Message
+	repeated   bool
 }
 
 func (u *nestedArgUnit) prepareRequired(p printer.Printer, refName string, done map[registry.Message]struct{}) []string {
@@ -47,7 +48,11 @@ func (u *nestedArgUnit) produces() []registry.Message {
 }
 
 func (u *nestedArgUnit) printProtoUsage(p printer.Printer, idx int) {
-	p.P(strcase.ToCamel(u.fieldName), "Gen ", strcase.ToSnake(u.fieldName), " = ", idx+1, ";")
+	if u.repeated {
+		p.P("repeated ", strcase.ToCamel(u.fieldName), "Gen ", strcase.ToSnake(u.fieldName), " = ", idx+1, ";")
+	} else {
+		p.P(strcase.ToCamel(u.fieldName), "Gen ", strcase.ToSnake(u.fieldName), " = ", idx+1, ";")
+	}
 }
 
 func (u *nestedArgUnit) getFieldName() string {
@@ -88,7 +93,7 @@ func (u *nestedArgUnit) tryMerge(nau *nestedArgUnit) error {
 				}
 				found = true
 			}
-			if !found{
+			if !found {
 				u.nestedArgs = append(u.nestedArgs, fau)
 			}
 		} else if childNau, ok := v.(*nestedArgUnit); ok {
@@ -119,6 +124,7 @@ type fieldArgUnit struct {
 	fieldName     string
 	fieldType     registry.FieldType
 	producerStack [][]fieldMessageDependency
+	repeated      bool
 }
 
 func (f *fieldArgUnit) prepareRequired(p printer.Printer, refName string, done map[registry.Message]struct{}) []string {
@@ -128,10 +134,12 @@ func (f *fieldArgUnit) prepareRequired(p printer.Printer, refName string, done m
 			if _, ok := done[fmd.msg]; ok {
 				continue
 			}
-			p.P(strcase.ToLowerCamel(fmd.msg.Name()), " := &", fmd.msg.Package(), ".", fmd.msg.Name(), "{}")
-			done[fmd.msg] = struct{}{}
+			if fmd.msg!=nil{
+				p.P(strcase.ToLowerCamel(fmd.fieldName), " := &", fmd.msg.Package(), ".", fmd.msg.Name(), "{}")
+				done[fmd.msg] = struct{}{}
+			}
 			if idx == 0 {
-				ret = append(ret, strcase.ToLowerCamel(fmd.msg.Name()))
+				ret = append(ret, strcase.ToLowerCamel(fmd.fieldName))
 			}
 		}
 	}
@@ -139,10 +147,10 @@ func (f *fieldArgUnit) prepareRequired(p printer.Printer, refName string, done m
 		var retRef []string
 		for idx, fmd := range fmds {
 			if idx == 0 {
-				retRef = append(retRef, strcase.ToLowerCamel(fmd.msg.Name()))
+				retRef = append(retRef, strcase.ToLowerCamel(fmd.fieldName))
+			}else{
+				retRef = append(retRef, strcase.ToCamel(fmd.fieldName))
 			}
-			retRef = append(retRef, strcase.ToCamel(fmd.fieldName))
-
 		}
 		p.P(strings.Join(retRef, "."), " = ", refName, ".", strcase.ToCamel(f.fieldName))
 	}
@@ -158,15 +166,19 @@ func (f *fieldArgUnit) produces() []registry.Message {
 }
 
 func (f *fieldArgUnit) printProtoUsage(p printer.Printer, idx int) {
+	var prefix string
+	if f.repeated {
+		prefix = "repeated "
+	}
 	switch f.fieldType {
 	case registry.FieldTypeString:
-		p.P("string ", f.fieldName, " = ", idx+1, ";")
+		p.P(prefix, "string ", f.fieldName, " = ", idx+1, ";")
 	case registry.FieldTypeInt64:
-		p.P("int64 ", f.fieldName, " = ", idx+1, ";")
+		p.P(prefix, "int64 ", f.fieldName, " = ", idx+1, ";")
 	case registry.FieldTypeDouble:
-		p.P("float64 ", f.fieldName, " = ", idx+1, ";")
+		p.P(prefix, "float64 ", f.fieldName, " = ", idx+1, ";")
 	case registry.FieldTypeBool:
-		p.P("bool ", f.fieldName, " = ", idx+1, ";")
+		p.P(prefix, "bool ", f.fieldName, " = ", idx+1, ";")
 	}
 }
 

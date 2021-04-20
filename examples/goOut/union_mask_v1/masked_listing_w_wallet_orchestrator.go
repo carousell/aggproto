@@ -30,6 +30,10 @@ func (s *maskedListingWWalletSvc) InvokeMaskedListingWWallet(ctx context.Context
 	if err != nil {
 		return nil, err
 	}
-	resp := adaptMaskedListingWWalletResponse(getListingResponse, getUserWalletResponse)
+	resp, err := adaptMaskedListingWWalletResponse(getListingResponse, getUserWalletResponse)
+	if err != nil {
+		return nil, err
+	}
+	
 	return resp, nil
 }

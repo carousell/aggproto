@@ -61,17 +61,28 @@ func prepareDependencies(p printer.Printer, deps [][]fieldMessageDependency) {
 		}
 	}
 }
-func prepareImports(p printer.Printer, meta dsl.Meta, deps [][]fieldMessageDependency) {
+func prepareImports(p printer.Printer, meta dsl.Meta, deps [][]fieldMessageDependency, units []adaptorUnit) {
 	packages := map[string]struct{}{}
 	for _, dep := range deps {
 		for _, d := range dep {
 			packages[d.message.Package()] = struct{}{}
 		}
 	}
+	importErrors := false
+	for _, au := range units {
+		rss, _ := au.getRepeatedSizeString()
+		if len(rss) > 0 {
+			importErrors = true
+		}
+	}
 	if len(packages) > 0 {
 		p.P()
 		p.P("import (")
 		p.Tab()
+		if importErrors{
+			p.P("\"github.com/pkg/errors\"")
+			p.P()
+		}
 		for pkg, _ := range packages {
 			p.P("\"", meta.GoPackage, "/", pkg, "\"")
 		}
@@ -93,7 +104,13 @@ func (a *adaptorContext) PrintCodeUsage(p printer.Printer) {
 		params = append(params, strcase.ToLowerCamel(v.fieldName))
 	}
 	paramString := strings.Join(params, ", ")
-	p.P("resp := adapt", strcase.ToCamel(a.apiDescriptor.Name()), "Response(", paramString, ")")
+	p.P("resp, err := adapt", strcase.ToCamel(a.apiDescriptor.Name()), "Response(", paramString, ")")
+	p.P("if err != nil {")
+	p.Tab()
+	p.P("return nil, err")
+	p.UnTab()
+	p.P("}")
+	p.P()
 }
 func (a *adaptorContext) PrintCode(printerFactory printer.Factory) error {
 	p := printerFactory.Get(fmt.Sprintf("%s_adaptor.go", a.apiDescriptor.FileName()))
@@ -103,8 +120,8 @@ func (a *adaptorContext) PrintCode(printerFactory printer.Factory) error {
 	for _, au := range a.adaptorUnits {
 		deps = append(deps, au.dependencies()...)
 	}
-	prepareImports(p, a.meta, deps)
-	p.P("func ", "adapt", respClassName, "(", printTopLevelDependencies(deps), ") *", respClassName, "{")
+	prepareImports(p, a.meta, deps, a.adaptorUnits)
+	p.P("func ", "adapt", respClassName, "(", printTopLevelDependencies(deps), ") (*", respClassName, ", error){")
 	p.Tab()
 	//prepareDependencies(p, deps)
 	p.P("resp := &", respClassName, "{}")
@@ -114,7 +131,7 @@ func (a *adaptorContext) PrintCode(printerFactory printer.Factory) error {
 			return er
 		}
 	}
-	p.P("return resp")
+	p.P("return resp, nil")
 	p.UnTab()
 	p.P("}")
 	return nil

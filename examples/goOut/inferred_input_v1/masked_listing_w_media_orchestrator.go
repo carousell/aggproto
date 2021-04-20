@@ -31,6 +31,10 @@ func (s *maskedListingWMediaSvc) InvokeMaskedListingWMedia(ctx context.Context, 
 	if err != nil {
 		return nil, err
 	}
-	resp := adaptMaskedListingWMediaResponse(getListingResponse, getMediaResponse)
+	resp, err := adaptMaskedListingWMediaResponse(getListingResponse, getMediaResponse)
+	if err != nil {
+		return nil, err
+	}
+	
 	return resp, nil
 }

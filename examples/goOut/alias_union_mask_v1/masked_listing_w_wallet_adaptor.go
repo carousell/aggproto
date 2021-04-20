@@ -1,12 +1,12 @@
 package alias_union_mask_v1
 
 import (
-	"github.com/carousell/aggproto/examples/goOut/listing"
 	"github.com/carousell/aggproto/examples/goOut/listing_comments"
 	"github.com/carousell/aggproto/examples/goOut/wallet"
+	"github.com/carousell/aggproto/examples/goOut/listing"
 )
 
-func adaptMaskedListingWWalletResponse(getListingResponse *listing.GetListingResponse, getListingCommentsResponse *listing_comments.GetListingCommentsResponse, getUserWalletResponse *wallet.GetUserWalletResponse) *MaskedListingWWalletResponse{
+func adaptMaskedListingWWalletResponse(getListingResponse *listing.GetListingResponse, getListingCommentsResponse *listing_comments.GetListingCommentsResponse, getUserWalletResponse *wallet.GetUserWalletResponse) (*MaskedListingWWalletResponse, error){
 	resp := &MaskedListingWWalletResponse{}
 	resp.Listing = &MaskedListingWWalletResponse_ListingGen{}
 	resp.Listing.Title = getListingResponse.Listing.Title
@@ -18,5 +18,5 @@ func adaptMaskedListingWWalletResponse(getListingResponse *listing.GetListingRes
 	}
 	resp.Wallet = &MaskedListingWWalletResponse_WalletGen{}
 	resp.Wallet.Balance = getUserWalletResponse.UserWallet.CoinBalance
-	return resp
+	return resp, nil
 }

@@ -100,7 +100,10 @@ func (o *orchestrator) PrintCode(factory printer.Factory) error {
 	p.UnTab()
 	p.P("}")
 	for _, s := range o.stages {
-		s.PrintCode(factory)
+		er := s.PrintCode(factory)
+		if er != nil {
+			return er
+		}
 	}
 	return nil
 }

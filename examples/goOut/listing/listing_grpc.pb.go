@@ -18,6 +18,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ListingsClient interface {
+	BulkGetListings(ctx context.Context, in *BulkGetListingsRequest, opts ...grpc.CallOption) (*BulkGetListingsResponse, error)
 	GetListing(ctx context.Context, in *GetListingRequest, opts ...grpc.CallOption) (*GetListingResponse, error)
 }
 
@@ -27,6 +28,15 @@ type listingsClient struct {
 
 func NewListingsClient(cc grpc.ClientConnInterface) ListingsClient {
 	return &listingsClient{cc}
+}
+
+func (c *listingsClient) BulkGetListings(ctx context.Context, in *BulkGetListingsRequest, opts ...grpc.CallOption) (*BulkGetListingsResponse, error) {
+	out := new(BulkGetListingsResponse)
+	err := c.cc.Invoke(ctx, "/listing.Listings/BulkGetListings", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *listingsClient) GetListing(ctx context.Context, in *GetListingRequest, opts ...grpc.CallOption) (*GetListingResponse, error) {
@@ -42,6 +52,7 @@ func (c *listingsClient) GetListing(ctx context.Context, in *GetListingRequest, 
 // All implementations must embed UnimplementedListingsServer
 // for forward compatibility
 type ListingsServer interface {
+	BulkGetListings(context.Context, *BulkGetListingsRequest) (*BulkGetListingsResponse, error)
 	GetListing(context.Context, *GetListingRequest) (*GetListingResponse, error)
 	mustEmbedUnimplementedListingsServer()
 }
@@ -50,6 +61,9 @@ type ListingsServer interface {
 type UnimplementedListingsServer struct {
 }
 
+func (UnimplementedListingsServer) BulkGetListings(context.Context, *BulkGetListingsRequest) (*BulkGetListingsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BulkGetListings not implemented")
+}
 func (UnimplementedListingsServer) GetListing(context.Context, *GetListingRequest) (*GetListingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetListing not implemented")
 }
@@ -64,6 +78,24 @@ type UnsafeListingsServer interface {
 
 func RegisterListingsServer(s grpc.ServiceRegistrar, srv ListingsServer) {
 	s.RegisterService(&Listings_ServiceDesc, srv)
+}
+
+func _Listings_BulkGetListings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BulkGetListingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ListingsServer).BulkGetListings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/listing.Listings/BulkGetListings",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ListingsServer).BulkGetListings(ctx, req.(*BulkGetListingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Listings_GetListing_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -91,6 +123,10 @@ var Listings_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "listing.Listings",
 	HandlerType: (*ListingsServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "BulkGetListings",
+			Handler:    _Listings_BulkGetListings_Handler,
+		},
 		{
 			MethodName: "GetListing",
 			Handler:    _Listings_GetListing_Handler,

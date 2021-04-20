@@ -18,7 +18,7 @@ type messageFieldAdaptorUnit struct {
 	repeated                 bool
 }
 
-func (m *messageFieldAdaptorUnit) getRepeatedSizeString() (string, error) {
+func (m *messageFieldAdaptorUnit) getRepeatedSizeString() ([]string, error) {
 	var refs []string
 	for idx, fmd := range m.fieldMessageDependencies {
 		if idx == 0 {
@@ -28,10 +28,10 @@ func (m *messageFieldAdaptorUnit) getRepeatedSizeString() (string, error) {
 		}
 
 		if fmd.repeated {
-			return fmt.Sprintf("len(%s)", strings.Join(refs, ".")), nil
+			return []string{fmt.Sprintf("len(%s)", strings.Join(refs, "."))}, nil
 		}
 	}
-	return "", errors.Errorf("No repeated found")
+	return nil, errors.Errorf("No repeated found")
 }
 
 func (m *messageFieldAdaptorUnit) isAdaptorUnit() {
@@ -89,6 +89,7 @@ func makeNamespacedMessageAdaptorUnit(r registry.Registry, ofd *dsl.NamespacedMe
 	ofdSplits := strings.Split(ofd.NamespacedField, ".")
 
 	dependencyStack := []fieldMessageDependency{{msg.Name(), msg, false}}
+	numDependentRepeated := 0
 	var resolvedField registry.Field
 	resolvedMsg := msg
 	for idx, fd := range ifdSplits {
@@ -96,6 +97,7 @@ func makeNamespacedMessageAdaptorUnit(r registry.Registry, ofd *dsl.NamespacedMe
 		if strings.HasSuffix(fd, "[]") {
 			repeated = true
 			fd = strings.Trim(fd, "[]")
+			numDependentRepeated += 1
 		}
 		found := false
 		// todo get unresolved tail from somewhere
@@ -129,11 +131,13 @@ func makeNamespacedMessageAdaptorUnit(r registry.Registry, ofd *dsl.NamespacedMe
 	}
 	var unit adaptorUnit
 	if resolvedField != nil {
+		numRepeated := 0
 		lastOfdSplit := ofdSplits[len(ofdSplits)-1]
 		repeated := false
 		if strings.HasSuffix(lastOfdSplit, "[]") {
 			repeated = true
 			lastOfdSplit = strings.Trim(lastOfdSplit, "[]")
+			numRepeated += 1
 		}
 		unit = &messageFieldAdaptorUnit{underlying: resolvedField, fieldName: lastOfdSplit, fieldMessageDependencies: dependencyStack, repeated: repeated}
 		for i := len(ofdSplits) - 2; i >= 0; i -= 1 {
@@ -142,8 +146,12 @@ func makeNamespacedMessageAdaptorUnit(r registry.Registry, ofd *dsl.NamespacedMe
 			if strings.HasSuffix(currSplit, "[]") {
 				repeated = true
 				currSplit = strings.Trim(currSplit, "[]")
+				numRepeated += 1
 			}
 			unit = &nestedAdaptorUnit{fieldName: currSplit, nestedUnit: []adaptorUnit{unit}, repeated: repeated}
+		}
+		if numRepeated != numDependentRepeated {
+			return nil, errors.Errorf("imbalanced arrays in alias and output")
 		}
 		return unit, nil
 	}

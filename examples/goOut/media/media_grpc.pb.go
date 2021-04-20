@@ -19,6 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MediaServiceClient interface {
 	GetMedia(ctx context.Context, in *GetMediaRequest, opts ...grpc.CallOption) (*GetMediaResponse, error)
+	BulkGetMedia(ctx context.Context, in *BulkGetMediaRequest, opts ...grpc.CallOption) (*BulkGetMediaResponse, error)
 }
 
 type mediaServiceClient struct {
@@ -38,11 +39,21 @@ func (c *mediaServiceClient) GetMedia(ctx context.Context, in *GetMediaRequest, 
 	return out, nil
 }
 
+func (c *mediaServiceClient) BulkGetMedia(ctx context.Context, in *BulkGetMediaRequest, opts ...grpc.CallOption) (*BulkGetMediaResponse, error) {
+	out := new(BulkGetMediaResponse)
+	err := c.cc.Invoke(ctx, "/media.MediaService/BulkGetMedia", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MediaServiceServer is the server API for MediaService service.
 // All implementations must embed UnimplementedMediaServiceServer
 // for forward compatibility
 type MediaServiceServer interface {
 	GetMedia(context.Context, *GetMediaRequest) (*GetMediaResponse, error)
+	BulkGetMedia(context.Context, *BulkGetMediaRequest) (*BulkGetMediaResponse, error)
 	mustEmbedUnimplementedMediaServiceServer()
 }
 
@@ -52,6 +63,9 @@ type UnimplementedMediaServiceServer struct {
 
 func (UnimplementedMediaServiceServer) GetMedia(context.Context, *GetMediaRequest) (*GetMediaResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMedia not implemented")
+}
+func (UnimplementedMediaServiceServer) BulkGetMedia(context.Context, *BulkGetMediaRequest) (*BulkGetMediaResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BulkGetMedia not implemented")
 }
 func (UnimplementedMediaServiceServer) mustEmbedUnimplementedMediaServiceServer() {}
 
@@ -84,6 +98,24 @@ func _MediaService_GetMedia_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MediaService_BulkGetMedia_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BulkGetMediaRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MediaServiceServer).BulkGetMedia(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/media.MediaService/BulkGetMedia",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MediaServiceServer).BulkGetMedia(ctx, req.(*BulkGetMediaRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MediaService_ServiceDesc is the grpc.ServiceDesc for MediaService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -94,6 +126,10 @@ var MediaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMedia",
 			Handler:    _MediaService_GetMedia_Handler,
+		},
+		{
+			MethodName: "BulkGetMedia",
+			Handler:    _MediaService_BulkGetMedia_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

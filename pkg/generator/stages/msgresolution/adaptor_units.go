@@ -21,7 +21,7 @@ type adaptorUnit interface {
 	printAsProtoField(p printer.Printer, idx int)
 	printAsAdaptorCode(p printer.Printer, referenceName string, parents []string, repeatedStringIdxRef []string) error
 	dependencies() [][]fieldMessageDependency
-	getRepeatedSizeString() (string, error)
+	getRepeatedSizeString() ([]string, error)
 }
 
 type adaptorUnits []adaptorUnit
@@ -52,26 +52,34 @@ type nestedAdaptorUnit struct {
 	repeated   bool
 }
 
-func (n *nestedAdaptorUnit) getRepeatedSizeString() (string, error) {
-	var repeatedSizeStr string
+func (n *nestedAdaptorUnit) getRepeatedSizeString() ([]string, error) {
+	var repeatedSizeStr []string
+	done := map[string]struct{}{}
 	for _, au := range n.nestedUnit {
 		rss, er := au.getRepeatedSizeString()
 		if er != nil {
-			return "", er
+			return nil, er
 		}
-		if rss == "" {
+		if len(rss) == 0 {
 			continue
 		}
-		if repeatedSizeStr == "" {
+		if len(repeatedSizeStr) == 0 {
 			repeatedSizeStr = rss
+			for _, _rss := range rss {
+				done[_rss] = struct{}{}
+			}
 		} else {
-			if rss != repeatedSizeStr {
-				return "", errors.Errorf("repeated size string mismatch")
+			for _, _rss := range rss {
+				if _, ok := done[_rss]; ok {
+					continue
+				}
+				repeatedSizeStr = append(repeatedSizeStr, _rss)
+				done[_rss] = struct{}{}
 			}
 		}
 	}
-	if repeatedSizeStr == "" {
-		return "", errors.Errorf("No repeated field found")
+	if len(repeatedSizeStr) == 0 {
+		return nil, errors.Errorf("No repeated field found")
 	}
 	return repeatedSizeStr, nil
 }
@@ -92,8 +100,17 @@ func (n *nestedAdaptorUnit) printAsAdaptorCode(p printer.Printer, referenceName 
 		if err != nil {
 			return err
 		}
-		p.P(referenceName, ".", fieldName, " = make([]*", parentName, "_", fieldName, "Gen, ", rss, ")")
-		p.P("for i := 0; i < ", rss, "; i++ {")
+		for i := 0; i < len(rss)-1; i += 1 {
+			for j := i + 1; j < len(rss); j += 1 {
+				p.P("if ", rss[i], " != ", rss[j], " {")
+				p.Tab()
+				p.P("return nil, errors.Errorf(\"assertion failed %s != %s\", ", rss[i],", ", rss[j],")" )
+				p.UnTab()
+				p.P("}")
+			}
+		}
+		p.P(referenceName, ".", fieldName, " = make([]*", parentName, "_", fieldName, "Gen, ", rss[0], ")")
+		p.P("for i := 0; i < ", rss[0], "; i++ {")
 		p.Tab()
 		p.P(referenceName, ".", fieldName, "[i] = &", parentName, "_", fieldName, "Gen{}")
 		for _, au := range n.nestedUnit {

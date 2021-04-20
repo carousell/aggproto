@@ -11,6 +11,21 @@ type Message interface {
 
 type FieldType int
 
+func (ft FieldType) GoTypeString() string {
+	switch ft {
+	case FieldTypeInt64:
+		return "int64"
+	case FieldTypeBool:
+		return "bool"
+	case FieldTypeDouble:
+		return "float64"
+	case FieldTypeString:
+		return "string"
+	default:
+		panic("unimplemented ")
+	}
+}
+
 const (
 	FieldTypeInt32 FieldType = iota
 	FieldTypeInt64

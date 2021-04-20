@@ -23,6 +23,10 @@ func (s *maskedListingSvc) InvokeMaskedListing(ctx context.Context, req *MaskedL
 	if err != nil {
 		return nil, err
 	}
-	resp := adaptMaskedListingResponse(getListingResponse)
+	resp, err := adaptMaskedListingResponse(getListingResponse)
+	if err != nil {
+		return nil, err
+	}
+	
 	return resp, nil
 }

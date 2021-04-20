@@ -1,0 +1,20 @@
+syntax = "proto3";
+package rep_inferred_input_v1;
+option go_package = "github.com/carousell/aggproto/examples/goOut/rep_inferred_input_v1";
+service MaskedListingsWMediaService {
+	rpc InvokeMaskedListingsWMedia (MaskedListingsWMediaRequest) returns (MaskedListingsWMediaResponse);
+}
+message MaskedListingsWMediaRequest {
+	message GetListingsGen {
+		repeated string ids = 1;
+	}
+	GetListingsGen get_listings = 1;
+}
+message MaskedListingsWMediaResponse {
+	message ListingsGen {
+		string title = 1;
+		string description = 2;
+		string photo_url = 3;
+	}
+	repeated ListingsGen listings = 1;
+}

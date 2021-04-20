@@ -33,3 +33,4 @@ examples: clean install
 	protoc --go_out=examples/goOut --go-grpc_out=examples/goOut --go_opt=paths=source_relative --go-grpc_opt=paths=source_relative --proto_path=examples/protoOut union_mask_v1/masked_listing_w_wallet.proto
 	protoc --go_out=examples/goOut --go-grpc_out=examples/goOut --go_opt=paths=source_relative --go-grpc_opt=paths=source_relative --proto_path=examples/protoOut alias_union_mask_v1/masked_listing_w_wallet.proto
 	protoc --go_out=examples/goOut --go-grpc_out=examples/goOut --go_opt=paths=source_relative --go-grpc_opt=paths=source_relative --proto_path=examples/protoOut inferred_input_v1/masked_listing_w_media.proto
+	protoc --go_out=examples/goOut --go-grpc_out=examples/goOut --go_opt=paths=source_relative --go-grpc_opt=paths=source_relative --proto_path=examples/protoOut rep_inferred_input_v1/masked_listings_w_media.proto

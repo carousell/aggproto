@@ -15,6 +15,10 @@ func New() MockListingServiceServer {
 }
 
 func (s *mockListingSvc) InvokeMockListing(ctx context.Context, req *MockListingRequest) (*MockListingResponse, error){
-	resp := adaptMockListingResponse()
+	resp, err := adaptMockListingResponse()
+	if err != nil {
+		return nil, err
+	}
+	
 	return resp, nil
 }

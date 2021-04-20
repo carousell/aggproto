@@ -18,33 +18,111 @@ type pipedFieldUnit struct {
 	producerStack []fieldMessageDependency
 }
 
-func (u *pipedFieldUnit) printCode(p printer.Printer, done map[registry.Message]struct{}) string {
-	var ret string
-	for _, fmd := range u.producerStack {
-		if ret == "" {
-			ret = strcase.ToLowerCamel(fmd.msg.Name())
-		}
-		if fmd.msg == nil {
-			continue
-		}
-		if _, ok := done[fmd.msg]; !ok {
-			p.P(strcase.ToLowerCamel(fmd.msg.Name()), " := &", fmd.msg.Package(), ".", strcase.ToCamel(fmd.msg.Name()), "{}")
-			done[fmd.msg] = struct{}{}
+func pipedGetNextDependencyRepeatedSizeString(depStack []fieldMessageDependency, depRef []string) (int, string, error, []string) {
+	for idx, fmd := range depStack {
+		if fmd.repeated {
+			return idx, fmt.Sprintf("len(%s.%s)", strings.Join(depRef, "."), strcase.ToCamel(fmd.fieldName)), nil, append(depRef, strcase.ToCamel(fmd.fieldName))
+		} else {
+			if len(depRef) == 0 {
+				depRef = append(depRef, strcase.ToLowerCamel(fmd.fieldName))
+			} else {
+				depRef = append(depRef, strcase.ToCamel(fmd.fieldName))
+			}
 		}
 	}
-	lhs := ret
-	for _, fmd := range u.producerStack {
-		lhs = fmt.Sprintf("%s.%s", lhs, strcase.ToCamel(fmd.fieldName))
-	}
-	rhs := strcase.ToLowerCamel(u.depStack[0].msg.Name())
-	for idx, fmd := range u.depStack {
-		if idx == 0 {
-			continue
+	return -1, "", errors.Errorf("no repeated found in dep stack"), depRef
+}
+
+func pipedCodePrinter(p printer.Printer, producerStack []fieldMessageDependency, depStack []fieldMessageDependency, done map[string]struct{}, ref []string, depRef []string) error {
+	// initialize messages and slices
+	for idx, fmd := range producerStack {
+		if fmd.repeated {
+			depRepIdx, depRepLen, er, depRef := pipedGetNextDependencyRepeatedSizeString(depStack, depRef)
+			if er != nil {
+				return er
+			}
+			ref = append(ref, strcase.ToCamel(fmd.fieldName))
+			if fmd.msg != nil {
+				p.P(strings.Join(ref, "."), " = make([]*", fmd.msg.Package(), ".", strcase.ToCamel(fmd.msg.Name()), ", ", depRepLen, ")")
+				p.P("for i:=0; i < ", depRepLen, "; i+=1 {")
+				p.Tab()
+				p.P(strings.Join(ref, "."), "[i] = &", fmd.msg.Package(), ".", strcase.ToCamel(fmd.msg.Name()), "{}")
+				p.UnTab()
+				p.P("}")
+				return pipedCodePrinter(p, producerStack[idx+1:], depStack[depRepIdx+1:], done, ref, depRef)
+			} else {
+				p.P(strings.Join(ref, "."), " = make([]", fmd.fieldType.GoTypeString(), ", ", depRepLen, ")")
+				p.P("for i:=0; i < ", depRepLen, "; i+=1 {")
+				p.Tab()
+				var remDepRepRef []string
+				for i := depRepIdx + 1; i < len(depStack); i += 1 {
+					remDepRepRef = append(remDepRepRef, strcase.ToCamel(depStack[i].fieldName))
+				}
+				if len(remDepRepRef) > 0 {
+					p.P(strings.Join(ref, "."), "[i] = ", strings.Join(depRef, "."), "[i].", strings.Join(remDepRepRef, "."))
+				} else {
+					p.P(strings.Join(ref, "."), "[i] = ", strings.Join(depRef, "."), "[i]")
+				}
+				p.UnTab()
+				p.P("}")
+				return nil
+			}
+		} else if fmd.msg != nil {
+			p.P(strings.Join(ref, "."), ".", strcase.ToCamel(fmd.fieldName), " = &", fmd.msg.Package(), ".", strcase.ToCamel(fmd.msg.Name()), ")")
 		}
-		rhs = fmt.Sprintf("%s.%s", rhs, strcase.ToCamel(fmd.fieldName))
 	}
-	p.P(lhs, " = ", rhs)
-	return ret
+	return nil
+}
+func (u *pipedFieldUnit) printCode(p printer.Printer, done map[string]struct{}) (string, error) {
+	retFmd := u.producerStack[0]
+	ret := strcase.ToLowerCamel(retFmd.msg.Name())
+	if _, ok := done[ret]; !ok {
+		p.P(ret, " := &", retFmd.msg.Package(), ".", strcase.ToCamel(retFmd.msg.Name()), "{}")
+	}
+	err := pipedCodePrinter(p, u.producerStack[1:], u.depStack, done, []string{ret}, nil)
+	if err != nil {
+		return "", err
+	}
+	return ret, nil
+	//for idx, fmd := range u.producerStack {
+	//	if ret == "" {
+	//		ret = strcase.ToLowerCamel(fmd.msg.Name())
+	//		ref = append(ref, ret)
+	//	} else {
+	//		ref = append(ref, strcase.ToCamel(fmd.fieldName))
+	//	}
+	//	cacheKey = fmt.Sprintf("%s.%s", cacheKey, fmd.fieldName)
+	//	if _, ok := done[cacheKey]; !ok {
+	//		if fmd.repeated {
+	//			if fmd.msg != nil {
+	//				// todo missing length
+	//				p.P(strings.Join(ref, "."), " := make(*", fmd.msg.Package(), ".", strcase.ToCamel(fmd.msg.Name()), ")")
+	//			} else {
+	//				p.P(strings.Join(ref, "."))
+	//			}
+	//			p.P()
+	//		} else {
+	//			if fmd.msg == nil {
+	//				continue
+	//			}
+	//			p.P(strcase.ToLowerCamel(fmd.msg.Name()), " := &", fmd.msg.Package(), ".", strcase.ToCamel(fmd.msg.Name()), "{}")
+	//		}
+	//		done[cacheKey] = struct{}{}
+	//	}
+	//}
+	//lhs := ret
+	//for _, fmd := range u.producerStack {
+	//	lhs = fmt.Sprintf("%s.%s", lhs, strcase.ToCamel(fmd.fieldName))
+	//}
+	//rhs := strcase.ToLowerCamel(u.depStack[0].msg.Name())
+	//for idx, fmd := range u.depStack {
+	//	if idx == 0 {
+	//		continue
+	//	}
+	//	rhs = fmt.Sprintf("%s.%s", rhs, strcase.ToCamel(fmd.fieldName))
+	//}
+	//p.P(lhs, " = ", rhs)
+	//return ret
 
 }
 
@@ -70,10 +148,14 @@ func (pc *pipedContext) PrintCode(printerFactory printer.Factory) error {
 
 	p.P("func transformTo", strcase.ToCamel(pc.producesMsg.Name()), "(", strings.Join(dep, ", "), ") *", pc.producesMsg.Package(), ".", strcase.ToCamel(pc.producesMsg.Name()), "{")
 	p.Tab()
-	done := map[registry.Message]struct{}{}
+	done := map[string]struct{}{}
 	var ret []string
 	for _, pfu := range pc.units {
-		ret = append(ret, pfu.printCode(p, done))
+		retRef, er := pfu.printCode(p, done)
+		if er != nil {
+			return er
+		}
+		ret = append(ret, retRef)
 	}
 	p.P("return ", strings.Join(ret, ", "))
 	p.UnTab()
@@ -173,7 +255,9 @@ func applyPiping(pipeArg *dsl.PipedArgDescriptor, units []argUnit, r registry.Re
 	rawArgPath := pipeArg.Output()
 	for _, au := range units {
 		argPaths := strings.Split(rawArgPath, ".")
-		if ok, fau := matchAndRemoveArgPath(au, argPaths, 0); ok {
+		if ok, fau, er := matchAndRemoveArgPath(au, argPaths, 0); er != nil {
+			return nil, er
+		} else if ok {
 			msgs := r.ListMessages(registry.LMOWithPrefixMatch(pipeArg.Input()))
 			if len(msgs) != 1 {
 				return nil, errors.Errorf("piped return must match exactly one message found %d for %s", len(msgs), pipeArg.Input())
@@ -182,6 +266,7 @@ func applyPiping(pipeArg *dsl.PipedArgDescriptor, units []argUnit, r registry.Re
 			if err != nil {
 				return nil, err
 			}
+			// todo assert equality in num of repeated
 			return &pipedFieldUnit{producerStack: fau.producerStack[0], depStack: depStack}, nil
 		}
 	}
@@ -196,6 +281,11 @@ func resolveField(message registry.Message, input string) ([]fieldMessageDepende
 	var resolvedField registry.Field
 	for idx, fd := range splits {
 		found := false
+		repeated := false
+		if strings.HasSuffix(fd, "[]") {
+			repeated = true
+			fd = strings.Trim(fd, "[]")
+		}
 		if idx == 0 && fd == resolvedMsg.Package() {
 			continue
 		}
@@ -204,16 +294,19 @@ func resolveField(message registry.Message, input string) ([]fieldMessageDepende
 		}
 		for _, field := range resolvedMsg.Fields() {
 			if field.Name() == fd {
+				if (repeated || field.Repeated()) && !(repeated && field.Repeated()) {
+					return nil, errors.Errorf("mismatched array types ")
+				}
 				found = true
 				if field.Type() != registry.FieldTypeMessage {
 					if idx != len(splits)-1 {
 						return nil, errors.Errorf("partially resolved to field %s", input)
 					}
 					resolvedField = field
-					dependencyStack = append(dependencyStack, fieldMessageDependency{fieldName: field.Name()})
+					dependencyStack = append(dependencyStack, fieldMessageDependency{fieldName: field.Name(), repeated: field.Repeated(), fieldType: field.Type()})
 				} else {
 					resolvedMsg = field.Message()
-					dependencyStack = append(dependencyStack, fieldMessageDependency{fieldName: field.Name(), msg: resolvedMsg})
+					dependencyStack = append(dependencyStack, fieldMessageDependency{fieldName: field.Name(), msg: resolvedMsg, repeated: field.Repeated(), fieldType: field.Type()})
 				}
 				break
 			}

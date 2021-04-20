@@ -30,7 +30,10 @@ func (i *inResolver) Resolve(api dsl.ApiDescriptor, meta dsl.Meta, input []dsl.A
 	var pipedUnits []*pipedFieldUnit
 	for _, in := range input {
 		if aliasArg, ok := in.(*dsl.AliasArgDescriptor); ok {
-			au := applyAliasing(aliasArg, argUnits)
+			au, er := applyAliasing(aliasArg, argUnits)
+			if er != nil {
+				return nil, er
+			}
 			if au != nil {
 				createdAU = append(createdAU, au)
 			}
@@ -106,7 +109,7 @@ func mergeArgUnits(units []argUnit, createdAU []argUnit) ([]argUnit, error) {
 func explode(input []registry.Message) []argUnit {
 	var ret []argUnit
 	for _, msg := range input {
-		ret = append(ret, explodeMessage(msg.Name(), msg, nil))
+		ret = append(ret, explodeMessage(msg.Name(), msg, []fieldMessageDependency{{msg: msg, fieldName: msg.Name(), repeated: false, fieldType: registry.FieldTypeMessage}}))
 	}
 	return ret
 }
@@ -114,18 +117,23 @@ func explode(input []registry.Message) []argUnit {
 type fieldMessageDependency struct {
 	msg       registry.Message
 	fieldName string
+	repeated  bool
+	fieldType registry.FieldType
 }
 
 //stack
-func explodeMessage(name string, msg registry.Message, producesStack []fieldMessageDependency) argUnit {
+func explodeMessage(name string, msg registry.Message, producesStack []fieldMessageDependency) *nestedArgUnit {
 	au := &nestedArgUnit{fieldName: name, ctx: msg}
+
 	for _, f := range msg.Fields() {
 		switch f.Type() {
 		case registry.FieldTypeMessage:
-			au.nestedArgs = append(au.nestedArgs, explodeMessage(f.Name(), f.Message(), append(producesStack, fieldMessageDependency{msg, f.Name()})))
+			nau := explodeMessage(f.Name(), f.Message(), append(producesStack, fieldMessageDependency{f.Message(), f.Name(), f.Repeated(), f.Type()}))
+			nau.repeated = f.Repeated()
+			au.nestedArgs = append(au.nestedArgs, nau)
 		default:
-			producesStack:=append(producesStack, fieldMessageDependency{msg, f.Name()})
-			au.nestedArgs = append(au.nestedArgs, &fieldArgUnit{fieldName: f.Name(), fieldType: f.Type(), producerStack: [][]fieldMessageDependency{producesStack}})
+			producesStack := append(producesStack, fieldMessageDependency{nil, f.Name(), f.Repeated(), f.Type()})
+			au.nestedArgs = append(au.nestedArgs, &fieldArgUnit{fieldName: f.Name(), fieldType: f.Type(), producerStack: [][]fieldMessageDependency{producesStack}, repeated: f.Repeated()})
 		}
 	}
 	return au

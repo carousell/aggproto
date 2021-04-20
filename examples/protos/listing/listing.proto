@@ -3,9 +3,6 @@ syntax = "proto3";
 package listing;
 option go_package = "github.com/carousell/aggproto/examples/goOut/listing";
 
-message GetListingRequest {
-    string listing_id = 1;
-}
 
 message Listing {
     string id = 1;
@@ -14,11 +11,23 @@ message Listing {
     string media_id = 4;
 }
 
+message BulkGetListingsRequest {
+    repeated string listing_ids = 1;
+}
+message BulkGetListingsResponse {
+    repeated Listing listings = 1;
+}
+
+message GetListingRequest {
+    string listing_id = 1;
+}
 message GetListingResponse {
     Listing listing = 1;
 }
 
 service Listings {
+    rpc BulkGetListings (BulkGetListingsRequest) returns (BulkGetListingsResponse) {
+    }
     rpc GetListing (GetListingRequest) returns (GetListingResponse) {
     }
 }

@@ -3,9 +3,9 @@ package alias_union_mask_v1
 import (
 	"context"
 	
-	"github.com/carousell/aggproto/examples/goOut/listing"
 	"github.com/carousell/aggproto/examples/goOut/listing_comments"
 	"github.com/carousell/aggproto/examples/goOut/wallet"
+	"github.com/carousell/aggproto/examples/goOut/listing"
 )
 
 type maskedListingWWalletSvc struct {
@@ -37,6 +37,10 @@ func (s *maskedListingWWalletSvc) InvokeMaskedListingWWallet(ctx context.Context
 	if err != nil {
 		return nil, err
 	}
-	resp := adaptMaskedListingWWalletResponse(getListingResponse, getListingCommentsResponse, getUserWalletResponse)
+	resp, err := adaptMaskedListingWWalletResponse(getListingResponse, getListingCommentsResponse, getUserWalletResponse)
+	if err != nil {
+		return nil, err
+	}
+	
 	return resp, nil
 }
