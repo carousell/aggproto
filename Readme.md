@@ -37,7 +37,7 @@ The intent of this library is to generate APIs and server code that:
 <ul>
 <li>One of handling</li>
 <li>Enum and some other primitive types handling</li>
-<li>Repeated fields in input transformations and intermediate operations </li>
+<li>[done] Repeated fields in input transformations and intermediate operations </li>
 <li>A UI to make the spec definition process a bit more intuitive</li>
 <li>Additional boilerplate: go.mod + run server code for each group of APIs</li>
 <li>Defining and handling concerns like authentication, logging</li>

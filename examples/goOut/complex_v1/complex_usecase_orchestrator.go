@@ -17,7 +17,7 @@ type complexUsecaseSvc struct {
 	getUserWalletClient *getUserWalletClient
 }
 
-func New(listingComments listing_comments.ListingCommentsClient, wallet wallet.WalletClient, listings listing.ListingsClient, mediaService media.MediaServiceClient) ComplexUsecaseServiceServer {
+func New(listings listing.ListingsClient, mediaService media.MediaServiceClient, listingComments listing_comments.ListingCommentsClient, wallet wallet.WalletClient) ComplexUsecaseServiceServer {
 	return &complexUsecaseSvc{
 		bulkGetListingsClient: &bulkGetListingsClient{listings},
 		bulkGetMediaClient: &bulkGetMediaClient{mediaService},
@@ -27,7 +27,7 @@ func New(listingComments listing_comments.ListingCommentsClient, wallet wallet.W
 }
 
 func (s *complexUsecaseSvc) InvokeComplexUsecase(ctx context.Context, req *ComplexUsecaseRequest) (*ComplexUsecaseResponse, error){
-	bulkGetListingsRequest, bulkGetListingCommentsRequest, getUserWalletRequest, bulkGetMediaRequest := transformComplexUsecaseRequest(req)
+	bulkGetMediaRequest, bulkGetListingsRequest, bulkGetListingCommentsRequest, getUserWalletRequest := transformComplexUsecaseRequest(req)
 	bulkGetListingsResponse, err := s.bulkGetListingsClient.bulkGetListings(ctx, bulkGetListingsRequest)
 	if err != nil {
 		return nil, err
