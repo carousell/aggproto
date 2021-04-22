@@ -12,6 +12,8 @@ message GetMediaResponse {
 }
 message BulkGetMediaRequest {
     repeated string media_ids = 1;
+    string user_id = 2;
+    repeated string media_type = 3;
 }
 message BulkGetMediaResponse {
     repeated Media medias = 1;

@@ -1,0 +1,19 @@
+api:
+  name: complex_usecase
+  group: complex
+  version: 1
+meta:
+  goPackage: github.com/carousell/aggproto/examples/goOut
+input:
+  - get_listings.listing_ids[].ids=listing.BulkGetListingsRequest.listing_ids[]
+  - media.BulkGetMediaRequest.media_ids[]<-listing.BulkGetListingsResponse.listings[].media_id
+  - user_info.id=wallet.GetUserWalletRequest.user_id
+  - user_info.id=media.BulkGetMediaRequest.user_id
+  - meta.media_type[]=media.BulkGetMediaRequest.media_type[]
+output:
+  - listings[].info.title=listing.BulkGetListingsResponse.listings[].title
+  - listings[].info.description=listing.BulkGetListingsResponse.listings[].description
+  - listings[].media.photo_url=media.BulkGetMediaResponse.medias[].photo_url
+  - user_wallet.balance=wallet.GetUserWalletResponse.user_wallet.coin_balance
+  - api_version=42
+  - commit_id="123sdlfkj"

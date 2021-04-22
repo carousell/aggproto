@@ -15,7 +15,8 @@ type argUnit interface {
 	getFieldName() string
 	printProtoUsage(p printer.Printer, idx int)
 	produces() []registry.Message
-	prepareRequired(p printer.Printer, refName string, done map[registry.Message]struct{}) []string
+	prepareRequiredAssign(p printer.Printer, refName string, repIdx []string)
+	prepareRequiredDefine(p printer.Printer, refName string, done map[registry.Message]struct{}, repIdx []string) []string
 }
 
 type nestedArgUnit struct {
@@ -25,12 +26,32 @@ type nestedArgUnit struct {
 	repeated   bool
 }
 
-func (u *nestedArgUnit) prepareRequired(p printer.Printer, refName string, done map[registry.Message]struct{}) []string {
+func (u *nestedArgUnit) prepareRequiredDefine(p printer.Printer, refName string, done map[registry.Message]struct{}, repIdx []string) []string {
 	var ret []string
 	for _, au := range u.nestedArgs {
-		ret = append(ret, au.prepareRequired(p, fmt.Sprintf("%s.%s", refName, strcase.ToCamel(u.fieldName)), done)...)
+		ret = append(ret, au.prepareRequiredDefine(p, refName, done, repIdx)...)
 	}
 	return ret
+}
+
+func (u *nestedArgUnit) prepareRequiredAssign(p printer.Printer, refName string, repIdx []string) {
+	if u.repeated {
+		repIdx = append(repIdx, "i")
+		lenName := fmt.Sprintf("len(%s.%s)", refName, strcase.ToCamel(u.fieldName))
+		refName = fmt.Sprintf("%s.%s[i]", refName, strcase.ToCamel(u.fieldName))
+		p.P("for i := 0; i < ", lenName, "; i += 1 {")
+		p.Tab()
+		for _, au := range u.nestedArgs {
+			au.prepareRequiredAssign(p, refName, repIdx)
+		}
+		p.UnTab()
+		p.P("}")
+	} else {
+		refName = fmt.Sprintf("%s.%s", refName, strcase.ToCamel(u.fieldName))
+		for _, au := range u.nestedArgs {
+			au.prepareRequiredAssign(p, refName, repIdx)
+		}
+	}
 }
 
 func (u *nestedArgUnit) produces() []registry.Message {
@@ -127,14 +148,14 @@ type fieldArgUnit struct {
 	repeated      bool
 }
 
-func (f *fieldArgUnit) prepareRequired(p printer.Printer, refName string, done map[registry.Message]struct{}) []string {
+func (f *fieldArgUnit) prepareRequiredDefine(p printer.Printer, refName string, done map[registry.Message]struct{}, repIdx []string) []string {
 	var ret []string
 	for _, fmds := range f.producerStack {
 		for idx, fmd := range fmds {
 			if _, ok := done[fmd.msg]; ok {
 				continue
 			}
-			if fmd.msg!=nil{
+			if fmd.msg != nil {
 				p.P(strcase.ToLowerCamel(fmd.fieldName), " := &", fmd.msg.Package(), ".", fmd.msg.Name(), "{}")
 				done[fmd.msg] = struct{}{}
 			}
@@ -143,18 +164,27 @@ func (f *fieldArgUnit) prepareRequired(p printer.Printer, refName string, done m
 			}
 		}
 	}
+	return ret
+}
+
+func (f *fieldArgUnit) prepareRequiredAssign(p printer.Printer, refName string, repIdx []string) {
 	for _, fmds := range f.producerStack {
 		var retRef []string
+		numRep := 0
 		for idx, fmd := range fmds {
+			var refSuffix string
+			if fmd.repeated && len(repIdx) > numRep {
+				refSuffix = fmt.Sprintf("[%s]", repIdx[numRep])
+				numRep += 1
+			}
 			if idx == 0 {
-				retRef = append(retRef, strcase.ToLowerCamel(fmd.fieldName))
-			}else{
-				retRef = append(retRef, strcase.ToCamel(fmd.fieldName))
+				retRef = append(retRef, fmt.Sprintf("%s%s", strcase.ToLowerCamel(fmd.fieldName), refSuffix))
+			} else {
+				retRef = append(retRef, fmt.Sprintf("%s%s", strcase.ToCamel(fmd.fieldName), refSuffix))
 			}
 		}
 		p.P(strings.Join(retRef, "."), " = ", refName, ".", strcase.ToCamel(f.fieldName))
 	}
-	return ret
 }
 
 func (f *fieldArgUnit) produces() []registry.Message {

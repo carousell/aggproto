@@ -30,8 +30,8 @@ type MaskedListingWWalletRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	GetListing *MaskedListingWWalletRequest_GetListingGen `protobuf:"bytes,1,opt,name=get_listing,json=getListing,proto3" json:"get_listing,omitempty"`
-	GetWallet  *MaskedListingWWalletRequest_GetWalletGen  `protobuf:"bytes,2,opt,name=get_wallet,json=getWallet,proto3" json:"get_wallet,omitempty"`
+	GetWallet  *MaskedListingWWalletRequest_GetWalletGen  `protobuf:"bytes,1,opt,name=get_wallet,json=getWallet,proto3" json:"get_wallet,omitempty"`
+	GetListing *MaskedListingWWalletRequest_GetListingGen `protobuf:"bytes,2,opt,name=get_listing,json=getListing,proto3" json:"get_listing,omitempty"`
 }
 
 func (x *MaskedListingWWalletRequest) Reset() {
@@ -66,16 +66,16 @@ func (*MaskedListingWWalletRequest) Descriptor() ([]byte, []int) {
 	return file_alias_union_mask_v1_masked_listing_w_wallet_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *MaskedListingWWalletRequest) GetGetListing() *MaskedListingWWalletRequest_GetListingGen {
+func (x *MaskedListingWWalletRequest) GetGetWallet() *MaskedListingWWalletRequest_GetWalletGen {
 	if x != nil {
-		return x.GetListing
+		return x.GetWallet
 	}
 	return nil
 }
 
-func (x *MaskedListingWWalletRequest) GetGetWallet() *MaskedListingWWalletRequest_GetWalletGen {
+func (x *MaskedListingWWalletRequest) GetGetListing() *MaskedListingWWalletRequest_GetListingGen {
 	if x != nil {
-		return x.GetWallet
+		return x.GetListing
 	}
 	return nil
 }
@@ -135,53 +135,6 @@ func (x *MaskedListingWWalletResponse) GetWallet() *MaskedListingWWalletResponse
 	return nil
 }
 
-type MaskedListingWWalletRequest_GetListingGen struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-}
-
-func (x *MaskedListingWWalletRequest_GetListingGen) Reset() {
-	*x = MaskedListingWWalletRequest_GetListingGen{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_alias_union_mask_v1_masked_listing_w_wallet_proto_msgTypes[2]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *MaskedListingWWalletRequest_GetListingGen) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*MaskedListingWWalletRequest_GetListingGen) ProtoMessage() {}
-
-func (x *MaskedListingWWalletRequest_GetListingGen) ProtoReflect() protoreflect.Message {
-	mi := &file_alias_union_mask_v1_masked_listing_w_wallet_proto_msgTypes[2]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use MaskedListingWWalletRequest_GetListingGen.ProtoReflect.Descriptor instead.
-func (*MaskedListingWWalletRequest_GetListingGen) Descriptor() ([]byte, []int) {
-	return file_alias_union_mask_v1_masked_listing_w_wallet_proto_rawDescGZIP(), []int{0, 0}
-}
-
-func (x *MaskedListingWWalletRequest_GetListingGen) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
 type MaskedListingWWalletRequest_GetWalletGen struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -193,7 +146,7 @@ type MaskedListingWWalletRequest_GetWalletGen struct {
 func (x *MaskedListingWWalletRequest_GetWalletGen) Reset() {
 	*x = MaskedListingWWalletRequest_GetWalletGen{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_alias_union_mask_v1_masked_listing_w_wallet_proto_msgTypes[3]
+		mi := &file_alias_union_mask_v1_masked_listing_w_wallet_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -206,7 +159,7 @@ func (x *MaskedListingWWalletRequest_GetWalletGen) String() string {
 func (*MaskedListingWWalletRequest_GetWalletGen) ProtoMessage() {}
 
 func (x *MaskedListingWWalletRequest_GetWalletGen) ProtoReflect() protoreflect.Message {
-	mi := &file_alias_union_mask_v1_masked_listing_w_wallet_proto_msgTypes[3]
+	mi := &file_alias_union_mask_v1_masked_listing_w_wallet_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -219,10 +172,57 @@ func (x *MaskedListingWWalletRequest_GetWalletGen) ProtoReflect() protoreflect.M
 
 // Deprecated: Use MaskedListingWWalletRequest_GetWalletGen.ProtoReflect.Descriptor instead.
 func (*MaskedListingWWalletRequest_GetWalletGen) Descriptor() ([]byte, []int) {
-	return file_alias_union_mask_v1_masked_listing_w_wallet_proto_rawDescGZIP(), []int{0, 1}
+	return file_alias_union_mask_v1_masked_listing_w_wallet_proto_rawDescGZIP(), []int{0, 0}
 }
 
 func (x *MaskedListingWWalletRequest_GetWalletGen) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type MaskedListingWWalletRequest_GetListingGen struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (x *MaskedListingWWalletRequest_GetListingGen) Reset() {
+	*x = MaskedListingWWalletRequest_GetListingGen{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_alias_union_mask_v1_masked_listing_w_wallet_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MaskedListingWWalletRequest_GetListingGen) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MaskedListingWWalletRequest_GetListingGen) ProtoMessage() {}
+
+func (x *MaskedListingWWalletRequest_GetListingGen) ProtoReflect() protoreflect.Message {
+	mi := &file_alias_union_mask_v1_masked_listing_w_wallet_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MaskedListingWWalletRequest_GetListingGen.ProtoReflect.Descriptor instead.
+func (*MaskedListingWWalletRequest_GetListingGen) Descriptor() ([]byte, []int) {
+	return file_alias_union_mask_v1_masked_listing_w_wallet_proto_rawDescGZIP(), []int{0, 1}
+}
+
+func (x *MaskedListingWWalletRequest_GetListingGen) GetId() string {
 	if x != nil {
 		return x.Id
 	}
@@ -395,22 +395,22 @@ var file_alias_union_mask_v1_masked_listing_w_wallet_proto_rawDesc = []byte{
 	0x6f, 0x74, 0x6f, 0x12, 0x13, 0x61, 0x6c, 0x69, 0x61, 0x73, 0x5f, 0x75, 0x6e, 0x69, 0x6f, 0x6e,
 	0x5f, 0x6d, 0x61, 0x73, 0x6b, 0x5f, 0x76, 0x31, 0x22, 0x9d, 0x02, 0x0a, 0x1b, 0x4d, 0x61, 0x73,
 	0x6b, 0x65, 0x64, 0x4c, 0x69, 0x73, 0x74, 0x69, 0x6e, 0x67, 0x57, 0x57, 0x61, 0x6c, 0x6c, 0x65,
-	0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x5f, 0x0a, 0x0b, 0x67, 0x65, 0x74, 0x5f,
-	0x6c, 0x69, 0x73, 0x74, 0x69, 0x6e, 0x67, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x3e, 0x2e,
-	0x61, 0x6c, 0x69, 0x61, 0x73, 0x5f, 0x75, 0x6e, 0x69, 0x6f, 0x6e, 0x5f, 0x6d, 0x61, 0x73, 0x6b,
-	0x5f, 0x76, 0x31, 0x2e, 0x4d, 0x61, 0x73, 0x6b, 0x65, 0x64, 0x4c, 0x69, 0x73, 0x74, 0x69, 0x6e,
-	0x67, 0x57, 0x57, 0x61, 0x6c, 0x6c, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e,
-	0x47, 0x65, 0x74, 0x4c, 0x69, 0x73, 0x74, 0x69, 0x6e, 0x67, 0x47, 0x65, 0x6e, 0x52, 0x0a, 0x67,
-	0x65, 0x74, 0x4c, 0x69, 0x73, 0x74, 0x69, 0x6e, 0x67, 0x12, 0x5c, 0x0a, 0x0a, 0x67, 0x65, 0x74,
-	0x5f, 0x77, 0x61, 0x6c, 0x6c, 0x65, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x3d, 0x2e,
-	0x61, 0x6c, 0x69, 0x61, 0x73, 0x5f, 0x75, 0x6e, 0x69, 0x6f, 0x6e, 0x5f, 0x6d, 0x61, 0x73, 0x6b,
-	0x5f, 0x76, 0x31, 0x2e, 0x4d, 0x61, 0x73, 0x6b, 0x65, 0x64, 0x4c, 0x69, 0x73, 0x74, 0x69, 0x6e,
-	0x67, 0x57, 0x57, 0x61, 0x6c, 0x6c, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e,
-	0x47, 0x65, 0x74, 0x57, 0x61, 0x6c, 0x6c, 0x65, 0x74, 0x47, 0x65, 0x6e, 0x52, 0x09, 0x67, 0x65,
-	0x74, 0x57, 0x61, 0x6c, 0x6c, 0x65, 0x74, 0x1a, 0x1f, 0x0a, 0x0d, 0x47, 0x65, 0x74, 0x4c, 0x69,
+	0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x5c, 0x0a, 0x0a, 0x67, 0x65, 0x74, 0x5f,
+	0x77, 0x61, 0x6c, 0x6c, 0x65, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x3d, 0x2e, 0x61,
+	0x6c, 0x69, 0x61, 0x73, 0x5f, 0x75, 0x6e, 0x69, 0x6f, 0x6e, 0x5f, 0x6d, 0x61, 0x73, 0x6b, 0x5f,
+	0x76, 0x31, 0x2e, 0x4d, 0x61, 0x73, 0x6b, 0x65, 0x64, 0x4c, 0x69, 0x73, 0x74, 0x69, 0x6e, 0x67,
+	0x57, 0x57, 0x61, 0x6c, 0x6c, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x47,
+	0x65, 0x74, 0x57, 0x61, 0x6c, 0x6c, 0x65, 0x74, 0x47, 0x65, 0x6e, 0x52, 0x09, 0x67, 0x65, 0x74,
+	0x57, 0x61, 0x6c, 0x6c, 0x65, 0x74, 0x12, 0x5f, 0x0a, 0x0b, 0x67, 0x65, 0x74, 0x5f, 0x6c, 0x69,
+	0x73, 0x74, 0x69, 0x6e, 0x67, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x3e, 0x2e, 0x61, 0x6c,
+	0x69, 0x61, 0x73, 0x5f, 0x75, 0x6e, 0x69, 0x6f, 0x6e, 0x5f, 0x6d, 0x61, 0x73, 0x6b, 0x5f, 0x76,
+	0x31, 0x2e, 0x4d, 0x61, 0x73, 0x6b, 0x65, 0x64, 0x4c, 0x69, 0x73, 0x74, 0x69, 0x6e, 0x67, 0x57,
+	0x57, 0x61, 0x6c, 0x6c, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x47, 0x65,
+	0x74, 0x4c, 0x69, 0x73, 0x74, 0x69, 0x6e, 0x67, 0x47, 0x65, 0x6e, 0x52, 0x0a, 0x67, 0x65, 0x74,
+	0x4c, 0x69, 0x73, 0x74, 0x69, 0x6e, 0x67, 0x1a, 0x1e, 0x0a, 0x0c, 0x47, 0x65, 0x74, 0x57, 0x61,
+	0x6c, 0x6c, 0x65, 0x74, 0x47, 0x65, 0x6e, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x1a, 0x1f, 0x0a, 0x0d, 0x47, 0x65, 0x74, 0x4c, 0x69,
 	0x73, 0x74, 0x69, 0x6e, 0x67, 0x47, 0x65, 0x6e, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x1a, 0x1e, 0x0a, 0x0c, 0x47, 0x65, 0x74, 0x57,
-	0x61, 0x6c, 0x6c, 0x65, 0x74, 0x47, 0x65, 0x6e, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x22, 0xc4, 0x03, 0x0a, 0x1c, 0x4d, 0x61, 0x73,
 	0x6b, 0x65, 0x64, 0x4c, 0x69, 0x73, 0x74, 0x69, 0x6e, 0x67, 0x57, 0x57, 0x61, 0x6c, 0x6c, 0x65,
 	0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x56, 0x0a, 0x07, 0x6c, 0x69, 0x73,
@@ -473,15 +473,15 @@ var file_alias_union_mask_v1_masked_listing_w_wallet_proto_msgTypes = make([]pro
 var file_alias_union_mask_v1_masked_listing_w_wallet_proto_goTypes = []interface{}{
 	(*MaskedListingWWalletRequest)(nil),                         // 0: alias_union_mask_v1.MaskedListingWWalletRequest
 	(*MaskedListingWWalletResponse)(nil),                        // 1: alias_union_mask_v1.MaskedListingWWalletResponse
-	(*MaskedListingWWalletRequest_GetListingGen)(nil),           // 2: alias_union_mask_v1.MaskedListingWWalletRequest.GetListingGen
-	(*MaskedListingWWalletRequest_GetWalletGen)(nil),            // 3: alias_union_mask_v1.MaskedListingWWalletRequest.GetWalletGen
+	(*MaskedListingWWalletRequest_GetWalletGen)(nil),            // 2: alias_union_mask_v1.MaskedListingWWalletRequest.GetWalletGen
+	(*MaskedListingWWalletRequest_GetListingGen)(nil),           // 3: alias_union_mask_v1.MaskedListingWWalletRequest.GetListingGen
 	(*MaskedListingWWalletResponse_ListingGen)(nil),             // 4: alias_union_mask_v1.MaskedListingWWalletResponse.ListingGen
 	(*MaskedListingWWalletResponse_WalletGen)(nil),              // 5: alias_union_mask_v1.MaskedListingWWalletResponse.WalletGen
 	(*MaskedListingWWalletResponse_ListingGen_CommentsGen)(nil), // 6: alias_union_mask_v1.MaskedListingWWalletResponse.ListingGen.CommentsGen
 }
 var file_alias_union_mask_v1_masked_listing_w_wallet_proto_depIdxs = []int32{
-	2, // 0: alias_union_mask_v1.MaskedListingWWalletRequest.get_listing:type_name -> alias_union_mask_v1.MaskedListingWWalletRequest.GetListingGen
-	3, // 1: alias_union_mask_v1.MaskedListingWWalletRequest.get_wallet:type_name -> alias_union_mask_v1.MaskedListingWWalletRequest.GetWalletGen
+	2, // 0: alias_union_mask_v1.MaskedListingWWalletRequest.get_wallet:type_name -> alias_union_mask_v1.MaskedListingWWalletRequest.GetWalletGen
+	3, // 1: alias_union_mask_v1.MaskedListingWWalletRequest.get_listing:type_name -> alias_union_mask_v1.MaskedListingWWalletRequest.GetListingGen
 	4, // 2: alias_union_mask_v1.MaskedListingWWalletResponse.listing:type_name -> alias_union_mask_v1.MaskedListingWWalletResponse.ListingGen
 	5, // 3: alias_union_mask_v1.MaskedListingWWalletResponse.wallet:type_name -> alias_union_mask_v1.MaskedListingWWalletResponse.WalletGen
 	6, // 4: alias_union_mask_v1.MaskedListingWWalletResponse.ListingGen.comments:type_name -> alias_union_mask_v1.MaskedListingWWalletResponse.ListingGen.CommentsGen
@@ -525,7 +525,7 @@ func file_alias_union_mask_v1_masked_listing_w_wallet_proto_init() {
 			}
 		}
 		file_alias_union_mask_v1_masked_listing_w_wallet_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MaskedListingWWalletRequest_GetListingGen); i {
+			switch v := v.(*MaskedListingWWalletRequest_GetWalletGen); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -537,7 +537,7 @@ func file_alias_union_mask_v1_masked_listing_w_wallet_proto_init() {
 			}
 		}
 		file_alias_union_mask_v1_masked_listing_w_wallet_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MaskedListingWWalletRequest_GetWalletGen); i {
+			switch v := v.(*MaskedListingWWalletRequest_GetListingGen); i {
 			case 0:
 				return &v.state
 			case 1:

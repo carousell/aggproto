@@ -46,12 +46,13 @@ func (i *inResolver) Resolve(api dsl.ApiDescriptor, meta dsl.Meta, input []dsl.A
 			pipedUnits = append(pipedUnits, pfu)
 		}
 	}
-	pipedContexts := groupPipedUnitsByProduces(api, meta, pipedUnits)
+	allAU := filterEmpty(append(argUnits, createdAU...))
+	pipedContexts, _ := groupPipedUnitsByProduces(api, meta, pipedUnits, allAU)
 	err := addPipedDependencies(pipedContexts, opCtxs)
 	if err != nil {
 		return nil, err
 	}
-	argUnits, err = mergeArgUnits(filterEmpty(argUnits), filterEmpty(createdAU))
+	argUnits, err = mergeArgUnits(filterEmpty(allAU))
 	if err != nil {
 		return nil, err
 	}
@@ -83,9 +84,9 @@ func filterEmpty(units []argUnit) []argUnit {
 	return ret
 }
 
-func mergeArgUnits(units []argUnit, createdAU []argUnit) ([]argUnit, error) {
+func mergeArgUnits(units []argUnit) ([]argUnit, error) {
 	naus := map[string]*nestedArgUnit{}
-	for _, au := range append(units, createdAU...) {
+	for _, au := range units {
 		if nau, ok := au.(*nestedArgUnit); ok {
 			if existingNau, ok := naus[nau.fieldName]; ok {
 				err := existingNau.tryMerge(nau)

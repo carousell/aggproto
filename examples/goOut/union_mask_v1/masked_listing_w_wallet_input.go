@@ -7,8 +7,8 @@ import (
 
 func transformMaskedListingWWalletRequest(req *MaskedListingWWalletRequest) (*listing.GetListingRequest, *wallet.GetUserWalletRequest) {
 	getListingRequest := &listing.GetListingRequest{}
-	getListingRequest.ListingId = req.GetListingRequest.ListingId
 	getUserWalletRequest := &wallet.GetUserWalletRequest{}
+	getListingRequest.ListingId = req.GetListingRequest.ListingId
 	getUserWalletRequest.UserId = req.GetUserWalletRequest.UserId
 	return getListingRequest, getUserWalletRequest
 }

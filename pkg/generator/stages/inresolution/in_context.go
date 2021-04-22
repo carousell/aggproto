@@ -49,7 +49,7 @@ func (i *InputContext) PrintCodeUsage(p printer.Printer) {
 			if _, ok := done[msg]; ok {
 				continue
 			}
-			done[msg]= struct{}{}
+			done[msg] = struct{}{}
 			retReferences = append(retReferences, strcase.ToLowerCamel(msg.Name()))
 
 		}
@@ -71,7 +71,11 @@ func (i *InputContext) PrintCode(printerFactory printer.Factory) error {
 	var retReferences []string
 	done := map[registry.Message]struct{}{}
 	for _, au := range i.argUnits {
-		retReferences = append(retReferences, au.prepareRequired(p, "req", done)...)
+		retReferences = append(retReferences, au.prepareRequiredDefine(p, "req", done, []string{})...)
+		//retReferences = append(retReferences, prepareRequired(p, r, fmt.Sprintf("req.%s", r.Name())))
+	}
+	for _, au := range i.argUnits {
+		au.prepareRequiredAssign(p, "req", []string{})
 		//retReferences = append(retReferences, prepareRequired(p, r, fmt.Sprintf("req.%s", r.Name())))
 	}
 	p.P("return ", strings.Join(retReferences, ", "))

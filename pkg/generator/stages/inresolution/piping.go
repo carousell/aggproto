@@ -73,15 +73,18 @@ func pipedCodePrinter(p printer.Printer, producerStack []fieldMessageDependency,
 	}
 	return nil
 }
-func (u *pipedFieldUnit) printCode(p printer.Printer, done map[string]struct{}) (string, error) {
+func (u *pipedFieldUnit) printCode(p printer.Printer, done map[string]struct{}, own bool) (string, error) {
 	retFmd := u.producerStack[0]
 	ret := strcase.ToLowerCamel(retFmd.msg.Name())
-	if _, ok := done[ret]; !ok {
+	if _, ok := done[ret]; !ok && !own {
 		p.P(ret, " := &", retFmd.msg.Package(), ".", strcase.ToCamel(retFmd.msg.Name()), "{}")
 	}
 	err := pipedCodePrinter(p, u.producerStack[1:], u.depStack, done, []string{ret}, nil)
 	if err != nil {
 		return "", err
+	}
+	if own {
+		return "", nil
 	}
 	return ret, nil
 	//for idx, fmd := range u.producerStack {
@@ -132,6 +135,7 @@ type pipedContext struct {
 	producesMsg registry.Message
 	api         dsl.ApiDescriptor
 	meta        dsl.Meta
+	partialOwn  bool
 }
 
 func (pc *pipedContext) PrintProto(printer.Factory) {
@@ -145,17 +149,25 @@ func (pc *pipedContext) PrintCode(printerFactory printer.Factory) error {
 	for _, d := range pc.dependencies() {
 		dep = append(dep, fmt.Sprintf("%s *%s.%s", strcase.ToLowerCamel(d.Name()), d.Package(), strcase.ToCamel(d.Name())))
 	}
+	if pc.partialOwn {
+		p.P("func transformTo", strcase.ToCamel(pc.producesMsg.Name()), "(",
+			strcase.ToLowerCamel(pc.producesMsg.Name()), " *", pc.producesMsg.Package(), ".", strcase.ToCamel(pc.producesMsg.Name()), ", ",
+			strings.Join(dep, ", "), ") ", "{")
+	} else {
+		p.P("func transformTo", strcase.ToCamel(pc.producesMsg.Name()), "(", strings.Join(dep, ", "), ") *", pc.producesMsg.Package(), ".", strcase.ToCamel(pc.producesMsg.Name()), "{")
+	}
 
-	p.P("func transformTo", strcase.ToCamel(pc.producesMsg.Name()), "(", strings.Join(dep, ", "), ") *", pc.producesMsg.Package(), ".", strcase.ToCamel(pc.producesMsg.Name()), "{")
 	p.Tab()
 	done := map[string]struct{}{}
 	var ret []string
 	for _, pfu := range pc.units {
-		retRef, er := pfu.printCode(p, done)
+		retRef, er := pfu.printCode(p, done, pc.partialOwn)
 		if er != nil {
 			return er
 		}
-		ret = append(ret, retRef)
+		if retRef != "" {
+			ret = append(ret, retRef)
+		}
 	}
 	p.P("return ", strings.Join(ret, ", "))
 	p.UnTab()
@@ -179,7 +191,12 @@ func (pc *pipedContext) PrintCodeUsage(p printer.Printer) {
 	for _, d := range pc.dependencies() {
 		dep = append(dep, fmt.Sprintf("%s", strcase.ToLowerCamel(d.Name())))
 	}
-	p.P(strcase.ToLowerCamel(pc.producesMsg.Name()), " := transformTo", strcase.ToCamel(pc.producesMsg.Name()), "(", strings.Join(dep, ", "), ")")
+	if !pc.partialOwn {
+		p.P(strcase.ToLowerCamel(pc.producesMsg.Name()), " := transformTo", strcase.ToCamel(pc.producesMsg.Name()), "(", strings.Join(dep, ", "), ")")
+	} else {
+		// todo maybe a more suitable prefix
+		p.P("transformTo", strcase.ToCamel(pc.producesMsg.Name()), "(", strcase.ToLowerCamel(pc.producesMsg.Name()), ", ", strings.Join(dep, ", "), ")")
+	}
 }
 
 func (pc *pipedContext) AddStageDependency(stage stage.Stage) {
@@ -236,7 +253,7 @@ func addPipedDependencies(pipedContexts []*pipedContext, opCtxs []opresolution.O
 	return nil
 }
 
-func groupPipedUnitsByProduces(api dsl.ApiDescriptor, meta dsl.Meta, units []*pipedFieldUnit) []*pipedContext {
+func groupPipedUnitsByProduces(api dsl.ApiDescriptor, meta dsl.Meta, units []*pipedFieldUnit, argUnits []argUnit) ([]*pipedContext, error) {
 	producerMap := map[registry.Message][]*pipedFieldUnit{}
 	for _, u := range units {
 		if _, ok := producerMap[u.producerStack[0].msg]; !ok {
@@ -244,11 +261,27 @@ func groupPipedUnitsByProduces(api dsl.ApiDescriptor, meta dsl.Meta, units []*pi
 		}
 		producerMap[u.producerStack[0].msg] = append(producerMap[u.producerStack[0].msg], u)
 	}
+	auProducerMap := map[registry.Message]struct{}{}
+	for _, au := range argUnits {
+		produces := au.produces()
+		if len(produces) > 1 {
+			panic("impossible assertion")
+		}
+		msg := produces[0]
+		if _, ok := producerMap[msg]; ok {
+			auProducerMap[msg] = struct{}{}
+		}
+	}
+
 	var ret []*pipedContext
 	for msg, v := range producerMap {
-		ret = append(ret, &pipedContext{units: v, producesMsg: msg, api: api, meta: meta})
+		partialOwnership := false
+		if _, ok := auProducerMap[msg]; ok {
+			partialOwnership = true
+		}
+		ret = append(ret, &pipedContext{units: v, producesMsg: msg, api: api, meta: meta, partialOwn: partialOwnership})
 	}
-	return ret
+	return ret, nil
 }
 
 func applyPiping(pipeArg *dsl.PipedArgDescriptor, units []argUnit, r registry.Registry) (*pipedFieldUnit, error) {

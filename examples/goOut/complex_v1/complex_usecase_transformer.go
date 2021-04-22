@@ -1,4 +1,4 @@
-package rep_inferred_input_v1
+package complex_v1
 import (
 	"github.com/carousell/aggproto/examples/goOut/listing"
 	"github.com/carousell/aggproto/examples/goOut/media"

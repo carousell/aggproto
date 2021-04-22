@@ -1,0 +1,43 @@
+syntax = "proto3";
+package complex_v1;
+option go_package = "github.com/carousell/aggproto/examples/goOut/complex_v1";
+service ComplexUsecaseService {
+	rpc InvokeComplexUsecase (ComplexUsecaseRequest) returns (ComplexUsecaseResponse);
+}
+message ComplexUsecaseRequest {
+	message UserInfoGen {
+		string id = 1;
+	}
+	message MetaGen {
+		repeated string media_type = 1;
+	}
+	message GetListingsGen {
+		message ListingIdsGen {
+			string ids = 1;
+		}
+		repeated ListingIdsGen listing_ids = 1;
+	}
+	UserInfoGen user_info = 1;
+	MetaGen meta = 2;
+	GetListingsGen get_listings = 3;
+}
+message ComplexUsecaseResponse {
+	message ListingsGen {
+		message InfoGen {
+			string title = 1;
+			string description = 2;
+		}
+		message MediaGen {
+			string photo_url = 1;
+		}
+		InfoGen info = 1;
+		MediaGen media = 2;
+	}
+	message UserWalletGen {
+		int64 balance = 1;
+	}
+	repeated ListingsGen listings = 1;
+	UserWalletGen user_wallet = 2;
+	int64 api_version = 3;
+	string commit_id = 4;
+}
