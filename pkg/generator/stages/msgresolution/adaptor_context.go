@@ -70,7 +70,7 @@ func prepareImports(p printer.Printer, meta dsl.Meta, deps [][]fieldMessageDepen
 	}
 	importErrors := false
 	for _, au := range units {
-		rss, _ := au.getRepeatedSizeString()
+		rss, _ := au.getRepeatedSizeString(nil)
 		if len(rss) > 0 {
 			importErrors = true
 		}

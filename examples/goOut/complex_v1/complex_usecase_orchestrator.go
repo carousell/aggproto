@@ -3,28 +3,31 @@ package complex_v1
 import (
 	"context"
 	
-	"github.com/carousell/aggproto/examples/goOut/listing"
 	"github.com/carousell/aggproto/examples/goOut/media"
+	"github.com/carousell/aggproto/examples/goOut/listing_comments"
 	"github.com/carousell/aggproto/examples/goOut/wallet"
+	"github.com/carousell/aggproto/examples/goOut/listing"
 )
 
 type complexUsecaseSvc struct {
 	UnimplementedComplexUsecaseServiceServer
 	bulkGetListingsClient *bulkGetListingsClient
 	bulkGetMediaClient *bulkGetMediaClient
+	bulkGetListingCommentsClient *bulkGetListingCommentsClient
 	getUserWalletClient *getUserWalletClient
 }
 
-func New(listings listing.ListingsClient, mediaService media.MediaServiceClient, wallet wallet.WalletClient) ComplexUsecaseServiceServer {
+func New(listingComments listing_comments.ListingCommentsClient, wallet wallet.WalletClient, listings listing.ListingsClient, mediaService media.MediaServiceClient) ComplexUsecaseServiceServer {
 	return &complexUsecaseSvc{
 		bulkGetListingsClient: &bulkGetListingsClient{listings},
 		bulkGetMediaClient: &bulkGetMediaClient{mediaService},
+		bulkGetListingCommentsClient: &bulkGetListingCommentsClient{listingComments},
 		getUserWalletClient: &getUserWalletClient{wallet},
 	}
 }
 
 func (s *complexUsecaseSvc) InvokeComplexUsecase(ctx context.Context, req *ComplexUsecaseRequest) (*ComplexUsecaseResponse, error){
-	getUserWalletRequest, bulkGetMediaRequest, bulkGetListingsRequest := transformComplexUsecaseRequest(req)
+	bulkGetListingsRequest, bulkGetListingCommentsRequest, getUserWalletRequest, bulkGetMediaRequest := transformComplexUsecaseRequest(req)
 	bulkGetListingsResponse, err := s.bulkGetListingsClient.bulkGetListings(ctx, bulkGetListingsRequest)
 	if err != nil {
 		return nil, err
@@ -34,11 +37,15 @@ func (s *complexUsecaseSvc) InvokeComplexUsecase(ctx context.Context, req *Compl
 	if err != nil {
 		return nil, err
 	}
+	bulkGetListingCommentsResponse, err := s.bulkGetListingCommentsClient.bulkGetListingComments(ctx, bulkGetListingCommentsRequest)
+	if err != nil {
+		return nil, err
+	}
 	getUserWalletResponse, err := s.getUserWalletClient.getUserWallet(ctx, getUserWalletRequest)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := adaptComplexUsecaseResponse(bulkGetListingsResponse, bulkGetMediaResponse, getUserWalletResponse)
+	resp, err := adaptComplexUsecaseResponse(bulkGetListingsResponse, bulkGetMediaResponse, bulkGetListingCommentsResponse, getUserWalletResponse)
 	if err != nil {
 		return nil, err
 	}

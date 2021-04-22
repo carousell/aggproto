@@ -21,7 +21,7 @@ type adaptorUnit interface {
 	printAsProtoField(p printer.Printer, idx int)
 	printAsAdaptorCode(p printer.Printer, referenceName string, parents []string, repeatedStringIdxRef []string) error
 	dependencies() [][]fieldMessageDependency
-	getRepeatedSizeString() ([]string, error)
+	getRepeatedSizeString(repIdx []string) ([]string, error)
 }
 
 type adaptorUnits []adaptorUnit
@@ -52,11 +52,11 @@ type nestedAdaptorUnit struct {
 	repeated   bool
 }
 
-func (n *nestedAdaptorUnit) getRepeatedSizeString() ([]string, error) {
+func (n *nestedAdaptorUnit) getRepeatedSizeString(repIdx []string) ([]string, error) {
 	var repeatedSizeStr []string
 	done := map[string]struct{}{}
 	for _, au := range n.nestedUnit {
-		rss, er := au.getRepeatedSizeString()
+		rss, er := au.getRepeatedSizeString(repIdx)
 		if er != nil {
 			return nil, er
 		}
@@ -91,30 +91,37 @@ func (n *nestedAdaptorUnit) dependencies() [][]fieldMessageDependency {
 	}
 	return deps
 }
+func getNextRepeatedIdx(start rune, repIdx []string) string {
+	for _, rep := range repIdx {
+		if fmt.Sprintf("%c", start) == rep {
+			return getNextRepeatedIdx(start+1, repIdx)
+		}
+	}
+	return fmt.Sprintf("%c", start)
+}
 
 func (n *nestedAdaptorUnit) printAsAdaptorCode(p printer.Printer, referenceName string, parents []string, repeatedStringIdxRef []string) error {
 	fieldName := strcase.ToCamel(n.fieldName)
 	parentName := strings.Join(parents, "_")
 	if n.repeated {
-		rss, err := n.getRepeatedSizeString()
+		rss, err := n.getRepeatedSizeString(repeatedStringIdxRef)
 		if err != nil {
 			return err
 		}
-		for i := 0; i < len(rss)-1; i += 1 {
-			for j := i + 1; j < len(rss); j += 1 {
-				p.P("if ", rss[i], " != ", rss[j], " {")
+			for j := 1; j < len(rss); j += 1 {
+				p.P("if ", rss[0], " != ", rss[j], " {")
 				p.Tab()
-				p.P("return nil, errors.Errorf(\"assertion failed %s != %s\", ", rss[i],", ", rss[j],")" )
+				p.P("return nil, errors.Errorf(\"assertion failed %s != %s\", ", rss[0], ", ", rss[j], ")")
 				p.UnTab()
 				p.P("}")
 			}
-		}
 		p.P(referenceName, ".", fieldName, " = make([]*", parentName, "_", fieldName, "Gen, ", rss[0], ")")
-		p.P("for i := 0; i < ", rss[0], "; i++ {")
+		i := getNextRepeatedIdx('i', repeatedStringIdxRef)
+		p.P("for ", i, " := 0; ", i, " < ", rss[0], "; ", i, "++ {")
 		p.Tab()
-		p.P(referenceName, ".", fieldName, "[i] = &", parentName, "_", fieldName, "Gen{}")
+		p.P(referenceName, ".", fieldName, "[", i, "] = &", parentName, "_", fieldName, "Gen{}")
 		for _, au := range n.nestedUnit {
-			err := au.printAsAdaptorCode(p, fmt.Sprintf("%s.%s[i]", referenceName, fieldName), append(parents, fmt.Sprintf("%sGen", fieldName)), append(repeatedStringIdxRef, "i"))
+			err := au.printAsAdaptorCode(p, fmt.Sprintf("%s.%s[%s]", referenceName, fieldName, i), append(parents, fmt.Sprintf("%sGen", fieldName)), append(repeatedStringIdxRef, i))
 			if err != nil {
 				return err
 			}

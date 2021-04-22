@@ -13,7 +13,7 @@ type staticPrimitiveAdaptorUnit struct {
 	primitiveFD dsl.PrimitiveFieldDescriptor
 }
 
-func (s *staticPrimitiveAdaptorUnit) getRepeatedSizeString() ([]string, error) {
+func (s *staticPrimitiveAdaptorUnit) getRepeatedSizeString([]string) ([]string, error) {
 	return nil, nil
 }
 

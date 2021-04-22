@@ -24,7 +24,7 @@ func New(listings listing.ListingsClient, listingComments listing_comments.Listi
 }
 
 func (s *maskedListingWWalletSvc) InvokeMaskedListingWWallet(ctx context.Context, req *MaskedListingWWalletRequest) (*MaskedListingWWalletResponse, error){
-	getUserWalletRequest, getListingRequest, getListingCommentsRequest := transformMaskedListingWWalletRequest(req)
+	getListingRequest, getListingCommentsRequest, getUserWalletRequest := transformMaskedListingWWalletRequest(req)
 	getListingResponse, err := s.getListingClient.getListing(ctx, getListingRequest)
 	if err != nil {
 		return nil, err

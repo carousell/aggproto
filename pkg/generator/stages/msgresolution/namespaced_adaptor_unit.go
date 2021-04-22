@@ -18,8 +18,9 @@ type messageFieldAdaptorUnit struct {
 	repeated                 bool
 }
 
-func (m *messageFieldAdaptorUnit) getRepeatedSizeString() ([]string, error) {
+func (m *messageFieldAdaptorUnit) getRepeatedSizeString(repIdx []string) ([]string, error) {
 	var refs []string
+	numRepeated := 0
 	for idx, fmd := range m.fieldMessageDependencies {
 		if idx == 0 {
 			refs = append(refs, strcase.ToLowerCamel(fmd.fieldName))
@@ -28,6 +29,11 @@ func (m *messageFieldAdaptorUnit) getRepeatedSizeString() ([]string, error) {
 		}
 
 		if fmd.repeated {
+			if numRepeated < len(repIdx) {
+				refs[idx] = fmt.Sprintf("%s[%s]", refs[idx], repIdx[numRepeated])
+				numRepeated += 1
+				continue
+			}
 			return []string{fmt.Sprintf("len(%s)", strings.Join(refs, "."))}, nil
 		}
 	}

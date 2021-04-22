@@ -19,6 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ListingCommentsClient interface {
 	GetListingComments(ctx context.Context, in *GetListingCommentsRequest, opts ...grpc.CallOption) (*GetListingCommentsResponse, error)
+	BulkGetListingComments(ctx context.Context, in *BulkGetListingCommentsRequest, opts ...grpc.CallOption) (*BulkGetListingCommentsResponse, error)
 }
 
 type listingCommentsClient struct {
@@ -38,11 +39,21 @@ func (c *listingCommentsClient) GetListingComments(ctx context.Context, in *GetL
 	return out, nil
 }
 
+func (c *listingCommentsClient) BulkGetListingComments(ctx context.Context, in *BulkGetListingCommentsRequest, opts ...grpc.CallOption) (*BulkGetListingCommentsResponse, error) {
+	out := new(BulkGetListingCommentsResponse)
+	err := c.cc.Invoke(ctx, "/listing_comments.ListingComments/BulkGetListingComments", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ListingCommentsServer is the server API for ListingComments service.
 // All implementations must embed UnimplementedListingCommentsServer
 // for forward compatibility
 type ListingCommentsServer interface {
 	GetListingComments(context.Context, *GetListingCommentsRequest) (*GetListingCommentsResponse, error)
+	BulkGetListingComments(context.Context, *BulkGetListingCommentsRequest) (*BulkGetListingCommentsResponse, error)
 	mustEmbedUnimplementedListingCommentsServer()
 }
 
@@ -52,6 +63,9 @@ type UnimplementedListingCommentsServer struct {
 
 func (UnimplementedListingCommentsServer) GetListingComments(context.Context, *GetListingCommentsRequest) (*GetListingCommentsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetListingComments not implemented")
+}
+func (UnimplementedListingCommentsServer) BulkGetListingComments(context.Context, *BulkGetListingCommentsRequest) (*BulkGetListingCommentsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BulkGetListingComments not implemented")
 }
 func (UnimplementedListingCommentsServer) mustEmbedUnimplementedListingCommentsServer() {}
 
@@ -84,6 +98,24 @@ func _ListingComments_GetListingComments_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ListingComments_BulkGetListingComments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BulkGetListingCommentsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ListingCommentsServer).BulkGetListingComments(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/listing_comments.ListingComments/BulkGetListingComments",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ListingCommentsServer).BulkGetListingComments(ctx, req.(*BulkGetListingCommentsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ListingComments_ServiceDesc is the grpc.ServiceDesc for ListingComments service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -94,6 +126,10 @@ var ListingComments_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetListingComments",
 			Handler:    _ListingComments_GetListingComments_Handler,
+		},
+		{
+			MethodName: "BulkGetListingComments",
+			Handler:    _ListingComments_BulkGetListingComments_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -3,8 +3,8 @@ package inferred_input_v1
 import (
 	"context"
 	
-	"github.com/carousell/aggproto/examples/goOut/media"
 	"github.com/carousell/aggproto/examples/goOut/listing"
+	"github.com/carousell/aggproto/examples/goOut/media"
 )
 
 type maskedListingWMediaSvc struct {

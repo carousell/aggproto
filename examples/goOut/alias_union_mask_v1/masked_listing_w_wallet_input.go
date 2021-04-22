@@ -6,12 +6,12 @@ import (
 	"github.com/carousell/aggproto/examples/goOut/wallet"
 )
 
-func transformMaskedListingWWalletRequest(req *MaskedListingWWalletRequest) (*wallet.GetUserWalletRequest, *listing.GetListingRequest, *listing_comments.GetListingCommentsRequest) {
-	getUserWalletRequest := &wallet.GetUserWalletRequest{}
+func transformMaskedListingWWalletRequest(req *MaskedListingWWalletRequest) (*listing.GetListingRequest, *listing_comments.GetListingCommentsRequest, *wallet.GetUserWalletRequest) {
 	getListingRequest := &listing.GetListingRequest{}
 	getListingCommentsRequest := &listing_comments.GetListingCommentsRequest{}
-	getUserWalletRequest.UserId = req.GetWallet.Id
+	getUserWalletRequest := &wallet.GetUserWalletRequest{}
 	getListingRequest.ListingId = req.GetListing.Id
 	getListingCommentsRequest.ListingId = req.GetListing.Id
-	return getUserWalletRequest, getListingRequest, getListingCommentsRequest
+	getUserWalletRequest.UserId = req.GetWallet.Id
+	return getListingRequest, getListingCommentsRequest, getUserWalletRequest
 }

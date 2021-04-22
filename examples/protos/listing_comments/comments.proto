@@ -18,8 +18,16 @@ message ListingComment {
 message GetListingCommentsResponse {
     ListingComment listing_comment = 1;
 }
+message BulkGetListingCommentsRequest {
+    repeated string listing_id = 1;
+}
+message BulkGetListingCommentsResponse {
+    repeated ListingComment listing_comments = 1;
+}
 
 service ListingComments {
     rpc GetListingComments (GetListingCommentsRequest) returns (GetListingCommentsResponse) {
+    }
+    rpc BulkGetListingComments (BulkGetListingCommentsRequest) returns (BulkGetListingCommentsResponse) {
     }
 }
