@@ -3,10 +3,10 @@ package complex_v1
 import (
 	"context"
 	
+	"github.com/carousell/aggproto/examples/goOut/listing"
 	"github.com/carousell/aggproto/examples/goOut/media"
 	"github.com/carousell/aggproto/examples/goOut/listing_comments"
 	"github.com/carousell/aggproto/examples/goOut/wallet"
-	"github.com/carousell/aggproto/examples/goOut/listing"
 )
 
 type complexUsecaseSvc struct {
@@ -27,7 +27,7 @@ func New(listings listing.ListingsClient, mediaService media.MediaServiceClient,
 }
 
 func (s *complexUsecaseSvc) InvokeComplexUsecase(ctx context.Context, req *ComplexUsecaseRequest) (*ComplexUsecaseResponse, error){
-	bulkGetMediaRequest, bulkGetListingsRequest, bulkGetListingCommentsRequest, getUserWalletRequest := transformComplexUsecaseRequest(req)
+	bulkGetListingsRequest, bulkGetListingCommentsRequest, getUserWalletRequest, bulkGetMediaRequest := transformComplexUsecaseRequest(req)
 	bulkGetListingsResponse, err := s.bulkGetListingsClient.bulkGetListings(ctx, bulkGetListingsRequest)
 	if err != nil {
 		return nil, err

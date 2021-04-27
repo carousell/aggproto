@@ -21,6 +21,8 @@ func (ft FieldType) GoTypeString() string {
 		return "float64"
 	case FieldTypeString:
 		return "string"
+	case FieldTypeMessage:
+		return "message"
 	default:
 		panic("unimplemented ")
 	}

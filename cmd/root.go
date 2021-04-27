@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	rootCmd = &cobra.Command{}
+	rootCmd = &cobra.Command{
+	}
 )
 
 func Run() {

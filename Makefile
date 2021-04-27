@@ -1,8 +1,17 @@
 
+
 install:
+	go version
 	go install tools/savedescriptor/protoc-gen-savedescriptor.go
 	go install tools/registerproto/protoc-gen-registerproto.go
+	go build -o build/aggproto-app tools/aggprotoapp/app.go
 	go install aggproto.go
+
+build-app: install
+	GOARCH=wasm GOOS=js go build -o build/web/app.wasm tools/aggprotoapp/app.go
+
+run-app: build-app
+	cd build; ./aggproto-app -spec ../examples/specs/ --registry ../examples/registry/
 
 test_proto:
 	protoc --savedescriptor_out=test/testdata/ -I=test/resources/protos test/resources/protos/pkga/a.proto
