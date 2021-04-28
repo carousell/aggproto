@@ -54,6 +54,7 @@ type MessageField struct {
 	Type     string
 	Message  *Message
 	Selected bool
+	Repeated bool
 }
 
 type Message struct {

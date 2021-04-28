@@ -50,6 +50,19 @@ a {
     height: calc(100% - 200px);
 }
 
+.row {
+    display: flex;
+    align-content: space-between;
+    /*padding: 1em;*/
+    align-items: center;
+}
+
+.icon {
+    width: 1em;
+    height: 1em;
+    color: aqua;
+}
+
 
 .nav {
     position: relative;
@@ -130,4 +143,12 @@ table, th, td {
     border: 2px solid antiquewhite;
     width: 100%;
     border-collapse: collapse;
+}
+
+.collapsible-elements {
+    margin-left: 5ex;
+}
+
+.message-card {
+    width: calc(100%);
 }

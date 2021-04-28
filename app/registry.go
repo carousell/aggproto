@@ -3,6 +3,8 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/carousell/aggproto/app/components"
+	registry2 "github.com/carousell/aggproto/pkg/registry"
 	"io/ioutil"
 	"net/http"
 
@@ -23,7 +25,6 @@ func (r *registry) OnMount(ctx app.Context) {
 		if len(msgs) == 0 {
 			return
 		}
-		app.Log("here", msgs)
 		ctx.Dispatch(func() {
 			r.MessageList = msgs
 			r.Update()
@@ -54,6 +55,7 @@ func (r *registry) Render() app.UI {
 				),
 				app.Range(r.SelectedMessages).Slice(func(i int) app.UI {
 					msg := r.SelectedMessages[i]
+					return &messageCard{msg: msg, fieldName: msg.Name, repeated: false}
 				}),
 			),
 		)
@@ -93,13 +95,36 @@ func (r *registry) loadMessages(prefix string) []*models.Message {
 
 type messageCard struct {
 	app.Compo
-	msg *models.Message
+	msg       *models.Message
+	fieldName string
+	repeated  bool
 }
 
 func (mc *messageCard) Render() app.UI {
+	var fieldNames []app.UI
+	for _, field := range mc.msg.Fields {
+		if field.Type == registry2.FieldTypeMessage.GoTypeString() {
+			fieldNames = append(fieldNames, &messageCard{msg: field.Message, fieldName: field.Name, repeated: field.Repeated})
+		} else {
+			fieldNames = append(fieldNames,
+				app.Div().Class("row").Body(
+					app.P().Text(field.Name),
+					app.If(field.Repeated, app.P().Text("[]")),
+					app.P().Text(field.Type),
+				),
+			)
+
+		}
+	}
 	return app.Div().Class("message-card").Body(
-		app.Stack().Vertical().Content(
-			app.Stack().Content(app.)
-			),
+		components.CollapsibleList().
+			WithTitle(
+				app.Div().Class("row").Body(
+					app.P().Text(mc.fieldName),
+					app.If(mc.repeated, app.P().Text("[]")),
+					app.P().Text(fmt.Sprintf("%s.%s", mc.msg.PackageName, mc.msg.Name)),
+				),
+			).
+			WithElements(fieldNames),
 	)
 }

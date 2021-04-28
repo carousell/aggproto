@@ -51,6 +51,7 @@ func Run(specDir string, registryDir string) error {
 		ThemeColor:      backgroundColor,
 		Styles: []string{
 			"/web/app.css",
+			"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css",
 		},
 	})
 	s.RegisterHttp()

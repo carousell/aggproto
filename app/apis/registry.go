@@ -2,7 +2,6 @@ package apis
 
 import (
 	"fmt"
-
 	"github.com/carousell/aggproto/app/models"
 	registry2 "github.com/carousell/aggproto/pkg/registry"
 	"github.com/carousell/aggproto/pkg/registry/parser"
@@ -17,19 +16,18 @@ func (r *registry) init() {
 	r.reg = parser.Load(r.registryDir)
 }
 
-func (r *registry) searchMessage(prefix string) []*models.Message{
+func (r *registry) searchMessage(prefix string) []*models.Message {
 	messages := r.reg.ListMessages(registry2.LMOWithPrefixMatch(prefix))
 	var ret []*models.Message
 	for _, msg := range messages {
-		ret = append(ret, adaptMessage(msg))
+		ret = append(ret, adaptMessage(msg, msg.Package()))
 	}
-	fmt.Printf("len %d\n", len(messages))
 	return ret
 }
 
-func adaptMessage(msg registry2.Message) *models.Message {
+func adaptMessage(msg registry2.Message, packageName string) *models.Message {
 	message := &models.Message{
-		PackageName: msg.Package(),
+		PackageName: packageName,
 		Name:        msg.Name(),
 	}
 	for _, f := range msg.Fields() {
@@ -38,8 +36,9 @@ func adaptMessage(msg registry2.Message) *models.Message {
 			message.Fields = append(message.Fields, &models.MessageField{
 				Name:     f.Name(),
 				Type:     f.Type().GoTypeString(),
-				Message:  adaptMessage(f.Message()),
+				Message:  adaptMessage(f.Message(), fmt.Sprintf("%s.%s", packageName, msg.Name())),
 				Selected: false,
+				Repeated: f.Repeated(),
 			})
 		default:
 			message.Fields = append(message.Fields, &models.MessageField{
@@ -47,6 +46,7 @@ func adaptMessage(msg registry2.Message) *models.Message {
 				Type:     f.Type().GoTypeString(),
 				Message:  nil,
 				Selected: false,
+				Repeated: f.Repeated(),
 			})
 		}
 	}
