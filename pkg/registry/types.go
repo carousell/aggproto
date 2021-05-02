@@ -21,8 +21,6 @@ func (ft FieldType) GoTypeString() string {
 		return "float64"
 	case FieldTypeString:
 		return "string"
-	case FieldTypeEnum:
-		return "int"
 	default:
 		panic("unimplemented ")
 	}
@@ -55,6 +53,10 @@ type UnaryOperation interface {
 type Service interface {
 	UnaryOperations() []UnaryOperation
 	Package() string
+	Name() string
+}
+
+type Enum interface {
 	Name() string
 }
 

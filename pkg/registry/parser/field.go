@@ -8,6 +8,31 @@ import (
 	"google.golang.org/protobuf/types/descriptorpb"
 )
 
+type EnumField struct {
+	FieldName string
+	Value     int32
+}
+
+func (r *EnumField) Type() registry.FieldType {
+	return registry.FieldTypeEnum
+}
+
+func (r *EnumField) Name() string {
+	return r.FieldName
+}
+
+func (r *EnumField) Message() registry.Message {
+	return nil
+}
+
+func (r *EnumField) Context() registry.Message {
+	return nil
+}
+
+func (r *EnumField) Repeated() bool {
+	return false
+}
+
 type MessageField struct {
 	FieldType        registry.FieldType
 	FieldName        string

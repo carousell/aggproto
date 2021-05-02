@@ -11,8 +11,7 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-// Requires gRPC-Go v1.32.0 or later.
-const _ = grpc.SupportPackageIsVersion7
+const _ = grpc.SupportPackageIsVersion6
 
 // ListingCommentsClient is the client API for ListingComments service.
 //
@@ -61,23 +60,16 @@ type ListingCommentsServer interface {
 type UnimplementedListingCommentsServer struct {
 }
 
-func (UnimplementedListingCommentsServer) GetListingComments(context.Context, *GetListingCommentsRequest) (*GetListingCommentsResponse, error) {
+func (*UnimplementedListingCommentsServer) GetListingComments(context.Context, *GetListingCommentsRequest) (*GetListingCommentsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetListingComments not implemented")
 }
-func (UnimplementedListingCommentsServer) BulkGetListingComments(context.Context, *BulkGetListingCommentsRequest) (*BulkGetListingCommentsResponse, error) {
+func (*UnimplementedListingCommentsServer) BulkGetListingComments(context.Context, *BulkGetListingCommentsRequest) (*BulkGetListingCommentsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BulkGetListingComments not implemented")
 }
-func (UnimplementedListingCommentsServer) mustEmbedUnimplementedListingCommentsServer() {}
+func (*UnimplementedListingCommentsServer) mustEmbedUnimplementedListingCommentsServer() {}
 
-// UnsafeListingCommentsServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to ListingCommentsServer will
-// result in compilation errors.
-type UnsafeListingCommentsServer interface {
-	mustEmbedUnimplementedListingCommentsServer()
-}
-
-func RegisterListingCommentsServer(s grpc.ServiceRegistrar, srv ListingCommentsServer) {
-	s.RegisterService(&ListingComments_ServiceDesc, srv)
+func RegisterListingCommentsServer(s *grpc.Server, srv ListingCommentsServer) {
+	s.RegisterService(&_ListingComments_serviceDesc, srv)
 }
 
 func _ListingComments_GetListingComments_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -116,10 +108,7 @@ func _ListingComments_BulkGetListingComments_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
-// ListingComments_ServiceDesc is the grpc.ServiceDesc for ListingComments service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var ListingComments_ServiceDesc = grpc.ServiceDesc{
+var _ListingComments_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "listing_comments.ListingComments",
 	HandlerType: (*ListingCommentsServer)(nil),
 	Methods: []grpc.MethodDesc{

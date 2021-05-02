@@ -16,6 +16,7 @@ message MaskedListingResponse {
 			message ListingGen {
 				string title = 1;
 				string description = 2;
+				enum status = 3;
 			}
 			ListingGen listing = 1;
 		}

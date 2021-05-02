@@ -11,5 +11,6 @@ func adaptMaskedListingResponse(getListingResponse *listing.GetListingResponse) 
 	resp.Listing.GetListingResponse.Listing = &MaskedListingResponse_ListingGen_GetListingResponseGen_ListingGen{}
 	resp.Listing.GetListingResponse.Listing.Title = getListingResponse.Listing.Title
 	resp.Listing.GetListingResponse.Listing.Description = getListingResponse.Listing.Description
+	resp.Listing.GetListingResponse.Listing.Status = getListingResponse.Listing.Status
 	return resp, nil
 }

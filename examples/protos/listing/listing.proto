@@ -9,6 +9,13 @@ message Listing {
     string title = 2;
     string description = 3;
     string media_id = 4;
+    Status status = 5;
+}
+
+enum Status {
+    UNKNOWN = 0;
+    LISTED = 1;
+    SOLD = 2;
 }
 
 message BulkGetListingsRequest {

@@ -69,6 +69,7 @@ func parseMessage(r registry.Registry, packageName string, msgType *descriptorpb
 	msg.MessageDefinitions = definitions
 	return msg
 }
+
 func populateMessageField(r registry.Registry, packageName string, msgType *descriptorpb.DescriptorProto) {
 	msgName := fmt.Sprintf("%s.%s", packageName, msgType.GetName())
 	msgs := r.ListMessages(registry.LMOWithFullName(msgName))

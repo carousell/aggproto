@@ -1,10 +1,10 @@
 package complex_v1
 
 import (
-	"github.com/carousell/aggproto/examples/goOut/listing"
 	"github.com/carousell/aggproto/examples/goOut/listing_comments"
 	"github.com/carousell/aggproto/examples/goOut/wallet"
 	"github.com/carousell/aggproto/examples/goOut/media"
+	"github.com/carousell/aggproto/examples/goOut/listing"
 )
 
 func transformComplexUsecaseRequest(req *ComplexUsecaseRequest) (*listing.BulkGetListingsRequest, *listing_comments.BulkGetListingCommentsRequest, *wallet.GetUserWalletRequest, *media.BulkGetMediaRequest) {

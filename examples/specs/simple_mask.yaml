@@ -7,3 +7,4 @@ meta:
 output:
   - listing.GetListingResponse.listing.title
   - listing.GetListingResponse.listing.description
+  - listing.GetListingResponse.listing.status

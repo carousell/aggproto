@@ -11,8 +11,7 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-// Requires gRPC-Go v1.32.0 or later.
-const _ = grpc.SupportPackageIsVersion7
+const _ = grpc.SupportPackageIsVersion6
 
 // MockListingServiceClient is the client API for MockListingService service.
 //
@@ -50,20 +49,13 @@ type MockListingServiceServer interface {
 type UnimplementedMockListingServiceServer struct {
 }
 
-func (UnimplementedMockListingServiceServer) InvokeMockListing(context.Context, *MockListingRequest) (*MockListingResponse, error) {
+func (*UnimplementedMockListingServiceServer) InvokeMockListing(context.Context, *MockListingRequest) (*MockListingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InvokeMockListing not implemented")
 }
-func (UnimplementedMockListingServiceServer) mustEmbedUnimplementedMockListingServiceServer() {}
+func (*UnimplementedMockListingServiceServer) mustEmbedUnimplementedMockListingServiceServer() {}
 
-// UnsafeMockListingServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to MockListingServiceServer will
-// result in compilation errors.
-type UnsafeMockListingServiceServer interface {
-	mustEmbedUnimplementedMockListingServiceServer()
-}
-
-func RegisterMockListingServiceServer(s grpc.ServiceRegistrar, srv MockListingServiceServer) {
-	s.RegisterService(&MockListingService_ServiceDesc, srv)
+func RegisterMockListingServiceServer(s *grpc.Server, srv MockListingServiceServer) {
+	s.RegisterService(&_MockListingService_serviceDesc, srv)
 }
 
 func _MockListingService_InvokeMockListing_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -84,10 +76,7 @@ func _MockListingService_InvokeMockListing_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
-// MockListingService_ServiceDesc is the grpc.ServiceDesc for MockListingService service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var MockListingService_ServiceDesc = grpc.ServiceDesc{
+var _MockListingService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "static_primitives_v1.MockListingService",
 	HandlerType: (*MockListingServiceServer)(nil),
 	Methods: []grpc.MethodDesc{

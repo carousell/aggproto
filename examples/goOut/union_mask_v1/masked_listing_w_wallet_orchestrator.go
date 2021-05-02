@@ -3,8 +3,8 @@ package union_mask_v1
 import (
 	"context"
 	
-	"github.com/carousell/aggproto/examples/goOut/listing"
 	"github.com/carousell/aggproto/examples/goOut/wallet"
+	"github.com/carousell/aggproto/examples/goOut/listing"
 )
 
 type maskedListingWWalletSvc struct {

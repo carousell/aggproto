@@ -21,7 +21,7 @@ func New(listings listing.ListingsClient, mediaService media.MediaServiceClient)
 }
 
 func (s *maskedListingsWMediaSvc) InvokeMaskedListingsWMedia(ctx context.Context, req *MaskedListingsWMediaRequest) (*MaskedListingsWMediaResponse, error){
-	bulkGetMediaRequest, bulkGetListingsRequest := transformMaskedListingsWMediaRequest(req)
+	bulkGetListingsRequest, bulkGetMediaRequest := transformMaskedListingsWMediaRequest(req)
 	bulkGetListingsResponse, err := s.bulkGetListingsClient.bulkGetListings(ctx, bulkGetListingsRequest)
 	if err != nil {
 		return nil, err

@@ -55,7 +55,11 @@ func (m *messageFieldAdaptorUnit) printAsProtoField(p printer.Printer, idx int) 
 		p.P("bool ", m.fieldName, " = ", idx, ";")
 	case registry.FieldTypeInt64:
 		p.P("int64 ", m.fieldName, " = ", idx, ";")
+	//case registry.FieldTypeEnum:
+	//	p.P("enum ", m.fieldName, " = ", idx, ";")
+
 	default:
+		fmt.Println(">>>>>>", m.underlying.Type(), m.underlying.Name())
 		panic("unhandled field type")
 	}
 }

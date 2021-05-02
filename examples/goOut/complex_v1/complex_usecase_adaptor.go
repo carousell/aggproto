@@ -2,14 +2,14 @@ package complex_v1
 
 import (
 	"github.com/pkg/errors"
-
-	"github.com/carousell/aggproto/examples/goOut/listing"
-	"github.com/carousell/aggproto/examples/goOut/listing_comments"
-	"github.com/carousell/aggproto/examples/goOut/media"
+	
 	"github.com/carousell/aggproto/examples/goOut/wallet"
+	"github.com/carousell/aggproto/examples/goOut/listing"
+	"github.com/carousell/aggproto/examples/goOut/media"
+	"github.com/carousell/aggproto/examples/goOut/listing_comments"
 )
 
-func adaptComplexUsecaseResponse(bulkGetListingsResponse *listing.BulkGetListingsResponse, bulkGetMediaResponse *media.BulkGetMediaResponse, bulkGetListingCommentsResponse *listing_comments.BulkGetListingCommentsResponse, getUserWalletResponse *wallet.GetUserWalletResponse) (*ComplexUsecaseResponse, error) {
+func adaptComplexUsecaseResponse(bulkGetListingsResponse *listing.BulkGetListingsResponse, bulkGetMediaResponse *media.BulkGetMediaResponse, bulkGetListingCommentsResponse *listing_comments.BulkGetListingCommentsResponse, getUserWalletResponse *wallet.GetUserWalletResponse) (*ComplexUsecaseResponse, error){
 	resp := &ComplexUsecaseResponse{}
 	if len(bulkGetListingsResponse.Listings) != len(bulkGetMediaResponse.Medias) {
 		return nil, errors.Errorf("assertion failed %s != %s", len(bulkGetListingsResponse.Listings), len(bulkGetMediaResponse.Medias))

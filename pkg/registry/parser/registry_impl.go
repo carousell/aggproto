@@ -19,6 +19,7 @@ type persistentRegistry interface {
 	addMessages(msgs ...*MessageContainer)
 	addOperations(ops ...*UnaryOperationContainer)
 	addFileDescriptor(fd *descriptorpb.FileDescriptorProto)
+	addEnums(enums ...*EnumContainer)
 	save() error
 }
 
@@ -69,9 +70,10 @@ func (s *store) add(fd *descriptorpb.FileDescriptorProto) {
 }
 
 type registryImpl struct {
-	s    *store
-	msgs map[string]*MessageContainer
-	ops  map[string]*UnaryOperationContainer
+	s     *store
+	msgs  map[string]*MessageContainer
+	ops   map[string]*UnaryOperationContainer
+	enums map[string]*EnumContainer
 }
 
 func (r *registryImpl) save() error {
@@ -209,6 +211,17 @@ func (r *registryImpl) addMessages(msgs ...*MessageContainer) {
 	}
 }
 
+func (r *registryImpl) addEnums(enums ...*EnumContainer) {
+	for _, enum := range enums {
+		if _, ok := r.enums[enum.Name()]; !ok {
+			r.enums[enum.Name()] = enum
+		} else {
+			// TODO check if same message then ignore.
+			log.Fatalf("message name already registered %s", enum.Name())
+		}
+	}
+}
+
 func (r *registryImpl) addOperations(ops ...*UnaryOperationContainer) {
 	for _, op := range ops {
 		if _, ok := r.ops[op.FullName()]; !ok {
@@ -224,6 +237,7 @@ func (r *registryImpl) addFileDescriptor(fd *descriptorpb.FileDescriptorProto) {
 	r.addMessages(pc.messages()...)
 	pc.populateMessageFields()
 	r.addOperations(pc.operations()...)
+	r.addEnums(pc.enums()...)
 	r.s.add(fd)
 }
 
@@ -233,8 +247,9 @@ func Load(dirName string) persistentRegistry {
 			dirName:         dirName,
 			fileDescriptors: map[string]*descriptorpb.FileDescriptorProto{},
 		},
-		msgs: map[string]*MessageContainer{},
-		ops:  map[string]*UnaryOperationContainer{},
+		msgs:  map[string]*MessageContainer{},
+		ops:   map[string]*UnaryOperationContainer{},
+		enums: map[string]*EnumContainer{},
 	}
 	err := filepath.WalkDir(dirName, func(path string, d fs.DirEntry, err error) error {
 		if d == nil || d.IsDir() {
