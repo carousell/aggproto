@@ -63,6 +63,8 @@ func parseField(r registry.Registry, msgContext *MessageContainer, fieldDescript
 		field.FieldType = registry.FieldTypeBool
 	case descriptorpb.FieldDescriptorProto_TYPE_INT64:
 		field.FieldType = registry.FieldTypeInt64
+	case descriptorpb.FieldDescriptorProto_TYPE_ENUM:
+		field.FieldType = registry.FieldTypeEnum
 	default:
 		// TODO
 		panic("unhandled type " + fieldDescriptorProto.GetType().String())
