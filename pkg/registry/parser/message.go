@@ -12,6 +12,7 @@ type MessageContainer struct {
 	PackageName        string
 	MessageParent      *MessageContainer
 	MessageDefinitions []*MessageContainer
+	EnumDefinitions    []*EnumContainer
 	MessageFields      []*MessageField
 }
 
@@ -66,6 +67,17 @@ func parseMessage(r registry.Registry, packageName string, msgType *descriptorpb
 			definitions = append(definitions, subMsg)
 		}
 	}
+
+	var enumDefinition []*EnumContainer
+	for _, en := range msgType.EnumType {
+		subEnum := parseEnum(r, packageName, en)
+		subEnum.EnumParent = msg
+		if subEnum != nil {
+			enumDefinition = append(enumDefinition, subEnum)
+		}
+	}
+
+	msg.EnumDefinitions = enumDefinition
 	msg.MessageDefinitions = definitions
 	return msg
 }
