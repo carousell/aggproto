@@ -5,11 +5,36 @@ import (
 	"google.golang.org/protobuf/types/descriptorpb"
 )
 
+type EnumValueContainer struct {
+	FieldName string
+	Value     int32
+}
+
+func (r *EnumValueContainer) Type() registry.FieldType {
+	return registry.FieldTypeEnum
+}
+
+func (r *EnumValueContainer) Name() string {
+	return r.FieldName
+}
+
+func (r *EnumValueContainer) Message() registry.Message {
+	return nil
+}
+
+func (r *EnumValueContainer) Context() registry.Message {
+	return nil
+}
+
+func (r *EnumValueContainer) Repeated() bool {
+	return false
+}
+
 type EnumContainer struct {
 	EnumName    string
 	PackageName string
 	EnumParent  *MessageContainer
-	EnumFields  []*EnumField
+	EnumFields  []*EnumValueContainer
 }
 
 func (e *EnumContainer) Name() string {
@@ -25,9 +50,9 @@ func parseEnum(r registry.Registry, packageName string, enumType *descriptorpb.E
 		EnumName:    enumType.GetName(),
 	}
 
-	var fields []*EnumField
+	var fields []*EnumValueContainer
 	for _, dp := range enumType.GetValue() {
-		enumF := &EnumField{
+		enumF := &EnumValueContainer{
 			FieldName: dp.GetName(),
 			Value:     dp.GetNumber(),
 		}

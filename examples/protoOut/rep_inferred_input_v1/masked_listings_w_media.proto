@@ -5,15 +5,15 @@ service MaskedListingsWMediaService {
 	rpc InvokeMaskedListingsWMedia (MaskedListingsWMediaRequest) returns (MaskedListingsWMediaResponse);
 }
 message MaskedListingsWMediaRequest {
-	message GetListingsGen {
-		repeated string ids = 1;
-	}
 	message BulkGetMediaRequestGen {
 		string user_id = 1;
 		repeated string media_type = 2;
 	}
-	GetListingsGen get_listings = 1;
-	BulkGetMediaRequestGen bulk_get_media_request = 2;
+	message GetListingsGen {
+		repeated string ids = 1;
+	}
+	BulkGetMediaRequestGen bulk_get_media_request = 1;
+	GetListingsGen get_listings = 2;
 }
 message MaskedListingsWMediaResponse {
 	message ListingsGen {

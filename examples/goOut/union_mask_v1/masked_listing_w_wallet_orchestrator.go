@@ -13,7 +13,7 @@ type maskedListingWWalletSvc struct {
 	getUserWalletClient *getUserWalletClient
 }
 
-func New(listings listing.ListingsClient, wallet wallet.WalletClient) MaskedListingWWalletServiceServer {
+func New(wallet wallet.WalletClient, listings listing.ListingsClient) MaskedListingWWalletServiceServer {
 	return &maskedListingWWalletSvc{
 		getListingClient: &getListingClient{listings},
 		getUserWalletClient: &getUserWalletClient{wallet},

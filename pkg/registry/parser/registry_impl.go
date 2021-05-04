@@ -235,9 +235,9 @@ func (r *registryImpl) addOperations(ops ...*UnaryOperationContainer) {
 func (r *registryImpl) addFileDescriptor(fd *descriptorpb.FileDescriptorProto) {
 	pc := &protoContainer{fd, r}
 	r.addMessages(pc.messages()...)
+	r.addEnums(pc.enums()...)
 	pc.populateMessageFields()
 	r.addOperations(pc.operations()...)
-	r.addEnums(pc.enums()...)
 	r.s.add(fd)
 }
 
