@@ -23,7 +23,8 @@ type Printer interface {
 }
 
 func newPrinter() Printer {
-	return &printer{new(bytes.Buffer), ""}
+	p := &printer{new(bytes.Buffer), ""}
+	return p
 }
 
 type printer struct {
