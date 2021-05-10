@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"github.com/carousell/aggproto/pkg/registry"
 	"google.golang.org/protobuf/types/descriptorpb"
 )
@@ -10,31 +11,15 @@ type EnumValueContainer struct {
 	Value     int32
 }
 
-func (r *EnumValueContainer) Type() registry.FieldType {
-	return registry.FieldTypeEnum
-}
-
-func (r *EnumValueContainer) Name() string {
-	return r.FieldName
-}
-
-func (r *EnumValueContainer) Message() registry.Message {
-	return nil
-}
-
-func (r *EnumValueContainer) Context() registry.Message {
-	return nil
-}
-
-func (r *EnumValueContainer) Repeated() bool {
-	return false
-}
-
 type EnumContainer struct {
 	EnumName    string
 	PackageName string
 	EnumParent  *MessageContainer
 	EnumFields  []*EnumValueContainer
+}
+
+func (e *EnumContainer) FullName() string {
+	return fmt.Sprintf("%s.%s", e.PackageName, e.EnumName)
 }
 
 func (e *EnumContainer) Name() string {

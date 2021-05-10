@@ -101,6 +101,28 @@ func (r *registryImpl) ListMessages(opts ...registry.ListMessageOption) []regist
 	return flattenAll(r.msgs)
 }
 
+func (r *registryImpl) ListEnums(opts ...registry.ListEnumOption) []registry.Enum {
+	options := registry.ListEnumOptions{}
+
+	for _, opt := range opts {
+		options = opt(options)
+	}
+
+	if options.ExactFullName != nil {
+		if *options.ExactFullName == "" {
+			return flattenAllEnums(r.enums)
+		}
+
+		enum, ok := r.enums[*options.ExactFullName]
+		if ok {
+			return []registry.Enum{enum}
+		}
+		return fetchEnumBySubDefinitionTraversal(r.msgs, *options.ExactFullName)
+	}
+	return nil
+
+}
+
 func (r *registryImpl) ListOperations(opts ...registry.ListServiceOption) []registry.UnaryOperation {
 	options := registry.ListServiceOptions{}
 	for _, opt := range opts {
@@ -164,6 +186,14 @@ func flattenAll(msgs map[string]*MessageContainer) []registry.Message {
 	return all
 }
 
+func flattenAllEnums(enums map[string]*EnumContainer) []registry.Enum {
+	var all []registry.Enum
+	for _, enum := range enums {
+		all = append(all, enum)
+	}
+	return all
+}
+
 func fetchMsgBySubDefinitionTraversal(msgs map[string]*MessageContainer, msgName string) []registry.Message {
 	splits := strings.Split(msgName, ".")
 	if len(splits) == 1 {
@@ -174,7 +204,7 @@ func fetchMsgBySubDefinitionTraversal(msgs map[string]*MessageContainer, msgName
 	if !ok {
 		return nil
 	}
-	for _, defName := range splits[2:] {
+	for _, defName := range splits[2:] { // is this a assumption that the nested message will be only upto 3 levels ? @vv
 		var matchedDef *MessageContainer
 		for _, subDef := range msg.MessageDefinitions {
 			if subDef.Name() == defName {
@@ -188,6 +218,26 @@ func fetchMsgBySubDefinitionTraversal(msgs map[string]*MessageContainer, msgName
 		msg = matchedDef
 	}
 	return []registry.Message{msg}
+}
+
+func fetchEnumBySubDefinitionTraversal(msgs map[string]*MessageContainer, enumName string) []registry.Enum {
+	splits := strings.Split(enumName, ".")
+
+	enumDefName := splits[len(splits)-1]
+	exactName := fmt.Sprintf("%s.%s", splits[0], splits[1])
+	msg, ok := msgs[exactName]
+	if !ok {
+		return nil
+	}
+
+	// Add support for more nesting in enums
+	for _, enumDef := range msg.EnumDefinitions {
+		if enumDef.Name() == enumDefName {
+			return []registry.Enum{enumDef}
+		}
+	}
+
+	return nil
 }
 
 func fetchMsgByPackageName(msgs map[string]*MessageContainer, packageName string) []registry.Message {
@@ -213,13 +263,14 @@ func (r *registryImpl) addMessages(msgs ...*MessageContainer) {
 
 func (r *registryImpl) addEnums(enums ...*EnumContainer) {
 	for _, enum := range enums {
-		if _, ok := r.enums[enum.Name()]; !ok {
-			r.enums[enum.Name()] = enum
+		if _, ok := r.enums[enum.FullName()]; !ok {
+			r.enums[enum.FullName()] = enum
 		} else {
 			// TODO check if same message then ignore.
 			log.Fatalf("message name already registered %s", enum.Name())
 		}
 	}
+
 }
 
 func (r *registryImpl) addOperations(ops ...*UnaryOperationContainer) {

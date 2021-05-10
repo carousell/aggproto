@@ -73,6 +73,8 @@ func parseMessage(r registry.Registry, packageName string, msgType *descriptorpb
 		subEnum := parseEnum(r, packageName, en)
 		subEnum.EnumParent = msg
 		if subEnum != nil {
+			// Should we do a add enum here to registry so that we do not need to traverse all the messages
+			// when finding the enum type ?? @vinay
 			enumDefinition = append(enumDefinition, subEnum)
 		}
 	}

@@ -1,9 +1,0 @@
-api:
-  name: mock_listing
-  group: static_primitives
-  version: 1
-meta:
-  goPackage: github.com/carousell/aggproto/examples/goOut
-output:
-  - listing.title="iPhone"
-  - listing.description="BNIB iPhone X"

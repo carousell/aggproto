@@ -5,6 +5,9 @@ option go_package = "github.com/carousell/aggproto/examples/goOut/listing";
 
 
 message Listing {
+    message T {
+        string test = 1;
+    }
     enum Test {
         ZERO = 0;
         ONE = 1;
@@ -15,6 +18,7 @@ message Listing {
     string media_id = 4;
     Status status = 5;
     Test test = 6;
+    T t = 7;
 }
 
 enum Status {

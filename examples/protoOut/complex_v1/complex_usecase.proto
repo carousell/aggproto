@@ -5,9 +5,6 @@ service ComplexUsecaseService {
 	rpc InvokeComplexUsecase (ComplexUsecaseRequest) returns (ComplexUsecaseResponse);
 }
 message ComplexUsecaseRequest {
-	message MetaGen {
-		repeated string media_type = 1;
-	}
 	message GetListingsGen {
 		message ListingIdsGen {
 			string ids = 1;
@@ -17,9 +14,12 @@ message ComplexUsecaseRequest {
 	message UserInfoGen {
 		string id = 1;
 	}
-	MetaGen meta = 1;
-	GetListingsGen get_listings = 2;
-	UserInfoGen user_info = 3;
+	message MetaGen {
+		repeated string media_type = 1;
+	}
+	GetListingsGen get_listings = 1;
+	UserInfoGen user_info = 2;
+	MetaGen meta = 3;
 }
 message ComplexUsecaseResponse {
 	message ListingsGen {
