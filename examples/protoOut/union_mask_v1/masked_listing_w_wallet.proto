@@ -1,0 +1,39 @@
+syntax = "proto3";
+package union_mask_v1;
+option go_package = "github.com/carousell/aggproto/examples/goOut/union_mask_v1";
+service MaskedListingWWalletService {
+	rpc InvokeMaskedListingWWallet (MaskedListingWWalletRequest) returns (MaskedListingWWalletResponse);
+}
+message MaskedListingWWalletRequest {
+	message GetListingRequestGen {
+		string listing_id = 1;
+	}
+	message GetUserWalletRequestGen {
+		string user_id = 1;
+	}
+	GetListingRequestGen get_listing_request = 1;
+	GetUserWalletRequestGen get_user_wallet_request = 2;
+}
+message MaskedListingWWalletResponse {
+	message ListingGen {
+		message GetListingResponseGen {
+			message ListingGen {
+				string title = 1;
+				string description = 2;
+			}
+			ListingGen listing = 1;
+		}
+		GetListingResponseGen GetListingResponse = 1;
+	}
+	message WalletGen {
+		message GetUserWalletResponseGen {
+			message UserWalletGen {
+				int64 coin_balance = 1;
+			}
+			UserWalletGen user_wallet = 1;
+		}
+		GetUserWalletResponseGen GetUserWalletResponse = 1;
+	}
+	ListingGen listing = 1;
+	WalletGen wallet = 2;
+}

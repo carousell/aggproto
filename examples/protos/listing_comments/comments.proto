@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package listing_comments;
+option go_package = "github.com/carousell/aggproto/examples/goOut/listing_comments";
+
+message GetListingCommentsRequest {
+    string listing_id = 1;
+}
+
+message ListingComment {
+    message Comment {
+        string title = 1;
+        string body = 2;
+    }
+    repeated Comment comments = 1;
+}
+
+message GetListingCommentsResponse {
+    ListingComment listing_comment = 1;
+}
+message BulkGetListingCommentsRequest {
+    repeated string listing_id = 1;
+}
+message BulkGetListingCommentsResponse {
+    repeated ListingComment listing_comments = 1;
+}
+
+service ListingComments {
+    rpc GetListingComments (GetListingCommentsRequest) returns (GetListingCommentsResponse) {
+    }
+    rpc BulkGetListingComments (BulkGetListingCommentsRequest) returns (BulkGetListingCommentsResponse) {
+    }
+}

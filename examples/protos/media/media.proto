@@ -1,0 +1,26 @@
+syntax = "proto3";
+package media;
+option go_package = "github.com/carousell/aggproto/examples/goOut/media";
+message Media {
+    string photo_url = 1;
+}
+message GetMediaRequest {
+    string media_id = 1;
+}
+message GetMediaResponse {
+    Media media = 1;
+}
+message BulkGetMediaRequest {
+    repeated string media_ids = 1;
+    string user_id = 2;
+    repeated string media_type = 3;
+}
+message BulkGetMediaResponse {
+    repeated Media medias = 1;
+}
+service MediaService {
+    rpc GetMedia (GetMediaRequest) returns (GetMediaResponse) {
+    }
+    rpc BulkGetMedia (BulkGetMediaRequest) returns (BulkGetMediaResponse) {
+    }
+}

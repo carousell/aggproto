@@ -1,0 +1,9 @@
+api:
+  name: masked_listing
+  group: simple_mask
+  version: 1
+meta:
+  goPackage: github.com/carousell/aggproto/examples/goOut
+output:
+  - listing.GetListingResponse.listing.title
+  - listing.GetListingResponse.listing.description

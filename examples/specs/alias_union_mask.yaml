@@ -1,0 +1,15 @@
+api:
+  name: masked_listing_w_wallet
+  group: alias_union_mask
+  version: 1
+meta:
+  goPackage: github.com/carousell/aggproto/examples/goOut
+input:
+  - get_listing.id=listing.GetListingRequest.listing_id
+  - get_listing.id=listing_comments.GetListingCommentsRequest.listing_id
+  - get_wallet.id=wallet.GetUserWalletRequest.user_id
+output:
+  - listing.title=listing.GetListingResponse.listing.title
+  - listing.description=listing.GetListingResponse.listing.description
+  - listing.comments[].title=listing_comments.GetListingCommentsResponse.listing_comment.comments[].title
+  - wallet.balance=wallet.GetUserWalletResponse.user_wallet.coin_balance
