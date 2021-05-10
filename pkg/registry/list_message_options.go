@@ -12,7 +12,7 @@ func LMOWithFullName(name string) ListMessageOption {
 		return options
 	}
 }
-
+// arg: prefix is usually longer than what is matched
 // used for field name resolution;
 func LMOWithPrefixMatch(prefix string) ListMessageOption {
 	return func(options ListMessageOptions) ListMessageOptions {

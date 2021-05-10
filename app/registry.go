@@ -15,7 +15,7 @@ import (
 type registry struct {
 	app.Compo
 	MessageList      []*models.Message
-	searchTerm       string
+	SearchTerm       string
 	SelectedMessages []*models.Message
 }
 
@@ -45,9 +45,13 @@ func (r *registry) Render() app.UI {
 								return app.Option().Value(fmt.Sprintf("%s.%s", msg.PackageName, msg.Name))
 							})),
 					app.Input().AutoComplete(true).List("messages").OnInput(func(ctx app.Context, e app.Event) {
-						r.searchTerm = ctx.JSSrc.Get("value").String()
+						r.SearchTerm = ctx.JSSrc.Get("value").String()
 					}),
 					app.Button().Text("search").OnClick(func(ctx app.Context, e app.Event) {
+						ctx.Dispatch(func() {
+							r.SelectedMessages = nil
+							r.Update()
+						})
 						ctx.Async(func() {
 							r.loadMessage(ctx)
 						})
@@ -62,7 +66,7 @@ func (r *registry) Render() app.UI {
 }
 
 func (r *registry) loadMessage(ctx app.Context) {
-	msgs := r.loadMessages(r.searchTerm)
+	msgs := r.loadMessages(r.SearchTerm)
 	if len(msgs) == 0 {
 		return
 	}
