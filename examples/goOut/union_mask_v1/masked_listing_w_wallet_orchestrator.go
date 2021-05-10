@@ -1,17 +1,21 @@
 package union_mask_v1
 
+
 import (
 	"context"
+
 	
 	"github.com/carousell/aggproto/examples/goOut/listing"
 	"github.com/carousell/aggproto/examples/goOut/wallet"
 )
+
 
 type maskedListingWWalletSvc struct {
 	UnimplementedMaskedListingWWalletServiceServer
 	getListingClient *getListingClient
 	getUserWalletClient *getUserWalletClient
 }
+
 
 func New(listings listing.ListingsClient, wallet wallet.WalletClient) MaskedListingWWalletServiceServer {
 	return &maskedListingWWalletSvc{
@@ -20,8 +24,9 @@ func New(listings listing.ListingsClient, wallet wallet.WalletClient) MaskedList
 	}
 }
 
+
 func (s *maskedListingWWalletSvc) InvokeMaskedListingWWallet(ctx context.Context, req *MaskedListingWWalletRequest) (*MaskedListingWWalletResponse, error){
-	getUserWalletRequest, getListingRequest := transformMaskedListingWWalletRequest(req)
+	getListingRequest, getUserWalletRequest := transformMaskedListingWWalletRequest(req)
 	getListingResponse, err := s.getListingClient.getListing(ctx, getListingRequest)
 	if err != nil {
 		return nil, err
@@ -34,6 +39,7 @@ func (s *maskedListingWWalletSvc) InvokeMaskedListingWWallet(ctx context.Context
 	if err != nil {
 		return nil, err
 	}
+
 	
 	return resp, nil
 }

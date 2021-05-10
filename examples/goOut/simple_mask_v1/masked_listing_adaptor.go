@@ -1,8 +1,10 @@
 package simple_mask_v1
 
+
 import (
 	"github.com/carousell/aggproto/examples/goOut/listing"
 )
+
 
 func adaptMaskedListingResponse(getListingResponse *listing.GetListingResponse) (*MaskedListingResponse, error){
 	resp := &MaskedListingResponse{}

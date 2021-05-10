@@ -1,14 +1,16 @@
 package union_mask_v1
 
+
 import (
-	"github.com/carousell/aggproto/examples/goOut/wallet"
-	"github.com/carousell/aggproto/examples/goOut/listing"
+	"github.com/carousell/aggproto/examples/goOut/0"
+	"github.com/carousell/aggproto/examples/goOut/1"
 )
 
-func transformMaskedListingWWalletRequest(req *MaskedListingWWalletRequest) (*wallet.GetUserWalletRequest, *listing.GetListingRequest) {
-	getUserWalletRequest := &wallet.GetUserWalletRequest{}
+
+func transformMaskedListingWWalletRequest(req *MaskedListingWWalletRequest) (*listing.GetListingRequest, *wallet.GetUserWalletRequest) {
 	getListingRequest := &listing.GetListingRequest{}
-	getUserWalletRequest.UserId = req.GetUserWalletRequest.UserId
+	getUserWalletRequest := &wallet.GetUserWalletRequest{}
 	getListingRequest.ListingId = req.GetListingRequest.ListingId
-	return getUserWalletRequest, getListingRequest
+	getUserWalletRequest.UserId = req.GetUserWalletRequest.UserId
+	return getListingRequest, getUserWalletRequest
 }

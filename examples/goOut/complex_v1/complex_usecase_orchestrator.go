@@ -1,13 +1,16 @@
 package complex_v1
 
+
 import (
 	"context"
+
 	
+	"github.com/carousell/aggproto/examples/goOut/listing"
 	"github.com/carousell/aggproto/examples/goOut/media"
 	"github.com/carousell/aggproto/examples/goOut/listing_comments"
 	"github.com/carousell/aggproto/examples/goOut/wallet"
-	"github.com/carousell/aggproto/examples/goOut/listing"
 )
+
 
 type complexUsecaseSvc struct {
 	UnimplementedComplexUsecaseServiceServer
@@ -17,6 +20,7 @@ type complexUsecaseSvc struct {
 	getUserWalletClient *getUserWalletClient
 }
 
+
 func New(mediaService media.MediaServiceClient, listingComments listing_comments.ListingCommentsClient, wallet wallet.WalletClient, listings listing.ListingsClient) ComplexUsecaseServiceServer {
 	return &complexUsecaseSvc{
 		bulkGetListingsClient: &bulkGetListingsClient{listings},
@@ -25,6 +29,7 @@ func New(mediaService media.MediaServiceClient, listingComments listing_comments
 		getUserWalletClient: &getUserWalletClient{wallet},
 	}
 }
+
 
 func (s *complexUsecaseSvc) InvokeComplexUsecase(ctx context.Context, req *ComplexUsecaseRequest) (*ComplexUsecaseResponse, error){
 	bulkGetListingsRequest, bulkGetListingCommentsRequest, getUserWalletRequest, bulkGetMediaRequest := transformComplexUsecaseRequest(req)
@@ -49,6 +54,7 @@ func (s *complexUsecaseSvc) InvokeComplexUsecase(ctx context.Context, req *Compl
 	if err != nil {
 		return nil, err
 	}
+
 	
 	return resp, nil
 }
