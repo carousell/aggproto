@@ -1,12 +1,3 @@
-//
-//  This source file is part of the carousell/aggproto open source project
-//
-//  Copyright © 2021 Carousell and the project authors
-//  Licensed under Apache License v2.0
-//
-//  See https://github.com/carousell/aggproto/blob/master/LICENSE for license information
-//  See https://github.com/carousell/aggproto/graphs/contributors for the list of project authors
-//
 package parser
 
 import (
@@ -28,6 +19,7 @@ type persistentRegistry interface {
 	addMessages(msgs ...*MessageContainer)
 	addOperations(ops ...*UnaryOperationContainer)
 	addFileDescriptor(fd *descriptorpb.FileDescriptorProto)
+	addEnums(enums ...*EnumContainer)
 	save() error
 }
 
@@ -78,9 +70,10 @@ func (s *store) add(fd *descriptorpb.FileDescriptorProto) {
 }
 
 type registryImpl struct {
-	s    *store
-	msgs map[string]*MessageContainer
-	ops  map[string]*UnaryOperationContainer
+	s     *store
+	msgs  map[string]*MessageContainer
+	ops   map[string]*UnaryOperationContainer
+	enums map[string]*EnumContainer
 }
 
 func (r *registryImpl) save() error {
@@ -106,6 +99,28 @@ func (r *registryImpl) ListMessages(opts ...registry.ListMessageOption) []regist
 
 	}
 	return flattenAll(r.msgs)
+}
+
+func (r *registryImpl) ListEnums(opts ...registry.ListEnumOption) []registry.Enum {
+	options := registry.ListEnumOptions{}
+
+	for _, opt := range opts {
+		options = opt(options)
+	}
+
+	if options.ExactFullName != nil {
+		if *options.ExactFullName == "" {
+			return flattenAllEnums(r.enums)
+		}
+
+		enum, ok := r.enums[*options.ExactFullName]
+		if ok {
+			return []registry.Enum{enum}
+		}
+		return fetchEnumBySubDefinitionTraversal(r.msgs, *options.ExactFullName)
+	}
+	return nil
+
 }
 
 func (r *registryImpl) ListOperations(opts ...registry.ListServiceOption) []registry.UnaryOperation {
@@ -171,6 +186,14 @@ func flattenAll(msgs map[string]*MessageContainer) []registry.Message {
 	return all
 }
 
+func flattenAllEnums(enums map[string]*EnumContainer) []registry.Enum {
+	var all []registry.Enum
+	for _, enum := range enums {
+		all = append(all, enum)
+	}
+	return all
+}
+
 func fetchMsgBySubDefinitionTraversal(msgs map[string]*MessageContainer, msgName string) []registry.Message {
 	splits := strings.Split(msgName, ".")
 	if len(splits) == 1 {
@@ -181,7 +204,7 @@ func fetchMsgBySubDefinitionTraversal(msgs map[string]*MessageContainer, msgName
 	if !ok {
 		return nil
 	}
-	for _, defName := range splits[2:] {
+	for _, defName := range splits[2:] { // is this a assumption that the nested message will be only upto 3 levels ? @vv
 		var matchedDef *MessageContainer
 		for _, subDef := range msg.MessageDefinitions {
 			if subDef.Name() == defName {
@@ -195,6 +218,26 @@ func fetchMsgBySubDefinitionTraversal(msgs map[string]*MessageContainer, msgName
 		msg = matchedDef
 	}
 	return []registry.Message{msg}
+}
+
+func fetchEnumBySubDefinitionTraversal(msgs map[string]*MessageContainer, enumName string) []registry.Enum {
+	splits := strings.Split(enumName, ".")
+
+	enumDefName := splits[len(splits)-1]
+	exactName := fmt.Sprintf("%s.%s", splits[0], splits[1])
+	msg, ok := msgs[exactName]
+	if !ok {
+		return nil
+	}
+
+	// Add support for more nesting in enums
+	for _, enumDef := range msg.EnumDefinitions {
+		if enumDef.Name() == enumDefName {
+			return []registry.Enum{enumDef}
+		}
+	}
+
+	return nil
 }
 
 func fetchMsgByPackageName(msgs map[string]*MessageContainer, packageName string) []registry.Message {
@@ -218,6 +261,18 @@ func (r *registryImpl) addMessages(msgs ...*MessageContainer) {
 	}
 }
 
+func (r *registryImpl) addEnums(enums ...*EnumContainer) {
+	for _, enum := range enums {
+		if _, ok := r.enums[enum.FullName()]; !ok {
+			r.enums[enum.FullName()] = enum
+		} else {
+			// TODO check if same message then ignore.
+			log.Fatalf("message name already registered %s", enum.Name())
+		}
+	}
+
+}
+
 func (r *registryImpl) addOperations(ops ...*UnaryOperationContainer) {
 	for _, op := range ops {
 		if _, ok := r.ops[op.FullName()]; !ok {
@@ -231,6 +286,7 @@ func (r *registryImpl) addOperations(ops ...*UnaryOperationContainer) {
 func (r *registryImpl) addFileDescriptor(fd *descriptorpb.FileDescriptorProto) {
 	pc := &protoContainer{fd, r}
 	r.addMessages(pc.messages()...)
+	r.addEnums(pc.enums()...)
 	pc.populateMessageFields()
 	r.addOperations(pc.operations()...)
 	r.s.add(fd)
@@ -242,8 +298,9 @@ func Load(dirName string) persistentRegistry {
 			dirName:         dirName,
 			fileDescriptors: map[string]*descriptorpb.FileDescriptorProto{},
 		},
-		msgs: map[string]*MessageContainer{},
-		ops:  map[string]*UnaryOperationContainer{},
+		msgs:  map[string]*MessageContainer{},
+		ops:   map[string]*UnaryOperationContainer{},
+		enums: map[string]*EnumContainer{},
 	}
 	err := filepath.WalkDir(dirName, func(path string, d fs.DirEntry, err error) error {
 		if d == nil || d.IsDir() {

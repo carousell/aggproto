@@ -1,12 +1,3 @@
-//
-//  This source file is part of the carousell/aggproto open source project
-//
-//  Copyright © 2021 Carousell and the project authors
-//  Licensed under Apache License v2.0
-//
-//  See https://github.com/carousell/aggproto/blob/master/LICENSE for license information
-//  See https://github.com/carousell/aggproto/graphs/contributors for the list of project authors
-//
 package registry
 
 type Message interface {
@@ -30,8 +21,6 @@ func (ft FieldType) GoTypeString() string {
 		return "float64"
 	case FieldTypeString:
 		return "string"
-	case FieldTypeMessage:
-		return "message"
 	default:
 		panic("unimplemented ")
 	}
@@ -53,6 +42,7 @@ type Field interface {
 	Message() Message
 	Context() Message
 	Repeated() bool
+	Enum() Enum
 }
 type UnaryOperation interface {
 	Input() Message
@@ -67,11 +57,19 @@ type Service interface {
 	Name() string
 }
 
+type Enum interface {
+	Name() string
+	FullName() string
+}
+
 type ListMessageOption func(options ListMessageOptions) ListMessageOptions
+
+type ListEnumOption func(options ListEnumOptions) ListEnumOptions
 
 type ListServiceOption func(options ListServiceOptions) ListServiceOptions
 
 type Registry interface {
 	ListMessages(...ListMessageOption) []Message
 	ListOperations(...ListServiceOption) []UnaryOperation
+	ListEnums(opts ...ListEnumOption) []Enum
 }

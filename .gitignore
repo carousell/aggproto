@@ -1,4 +1,2 @@
-build/web/app.wasm
-build/aggproto-app
 .idea/
 bin/

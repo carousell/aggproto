@@ -1,12 +1,3 @@
-//
-//  This source file is part of the carousell/aggproto open source project
-//
-//  Copyright © 2021 Carousell and the project authors
-//  Licensed under Apache License v2.0
-//
-//  See https://github.com/carousell/aggproto/blob/master/LICENSE for license information
-//  See https://github.com/carousell/aggproto/graphs/contributors for the list of project authors
-//
 package msgresolution
 
 import (
@@ -34,7 +25,7 @@ func (m *msgResolver) Resolve(api dsl.ApiDescriptor, meta dsl.Meta, fds []dsl.Fi
 			adaptorUnits = append(adaptorUnits, makeStaticPrimitiveAdaptorUnit(ofd, ifd))
 		case *dsl.NamespacedMessageFieldDescriptor:
 			nau, er := makeNamespacedMessageAdaptorUnit(m.r, ofd, ifd)
-			if er != nil {
+			if er!=nil{
 				return nil, er
 			}
 			adaptorUnits = append(adaptorUnits, nau)

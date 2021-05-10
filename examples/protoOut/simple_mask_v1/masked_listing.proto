@@ -16,6 +16,8 @@ message MaskedListingResponse {
 			message ListingGen {
 				string title = 1;
 				string description = 2;
+				Status status = 3;
+				Test test = 4;
 			}
 			ListingGen listing = 1;
 		}

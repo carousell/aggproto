@@ -1,12 +1,3 @@
-//
-//  This source file is part of the carousell/aggproto open source project
-//
-//  Copyright © 2021 Carousell and the project authors
-//  Licensed under Apache License v2.0
-//
-//  See https://github.com/carousell/aggproto/blob/master/LICENSE for license information
-//  See https://github.com/carousell/aggproto/graphs/contributors for the list of project authors
-//
 package parser
 
 import (
@@ -21,6 +12,7 @@ type MessageContainer struct {
 	PackageName        string
 	MessageParent      *MessageContainer
 	MessageDefinitions []*MessageContainer
+	EnumDefinitions    []*EnumContainer
 	MessageFields      []*MessageField
 }
 
@@ -75,9 +67,23 @@ func parseMessage(r registry.Registry, packageName string, msgType *descriptorpb
 			definitions = append(definitions, subMsg)
 		}
 	}
+
+	var enumDefinition []*EnumContainer
+	for _, en := range msgType.EnumType {
+		subEnum := parseEnum(r, packageName, en)
+		subEnum.EnumParent = msg
+		if subEnum != nil {
+			// Should we do a add enum here to registry so that we do not need to traverse all the messages
+			// when finding the enum type ?? @vinay
+			enumDefinition = append(enumDefinition, subEnum)
+		}
+	}
+
+	msg.EnumDefinitions = enumDefinition
 	msg.MessageDefinitions = definitions
 	return msg
 }
+
 func populateMessageField(r registry.Registry, packageName string, msgType *descriptorpb.DescriptorProto) {
 	msgName := fmt.Sprintf("%s.%s", packageName, msgType.GetName())
 	msgs := r.ListMessages(registry.LMOWithFullName(msgName))

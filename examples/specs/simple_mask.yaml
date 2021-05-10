@@ -5,5 +5,4 @@ api:
 meta:
   goPackage: github.com/carousell/aggproto/examples/goOut
 output:
-  - listing.GetListingResponse.listing.title
-  - listing.GetListingResponse.listing.description
+  - listing_comments.GetListingResponse.listing_comments.comments

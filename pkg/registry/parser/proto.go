@@ -1,12 +1,3 @@
-//
-//  This source file is part of the carousell/aggproto open source project
-//
-//  Copyright © 2021 Carousell and the project authors
-//  Licensed under Apache License v2.0
-//
-//  See https://github.com/carousell/aggproto/blob/master/LICENSE for license information
-//  See https://github.com/carousell/aggproto/graphs/contributors for the list of project authors
-//
 package parser
 
 import (
@@ -25,6 +16,14 @@ func (pc *protoContainer) messages() []*MessageContainer {
 		msgs = append(msgs, parseMessage(pc.r, pc.pb.GetPackage(), msgType))
 	}
 	return msgs
+}
+
+func (pc *protoContainer) enums() []*EnumContainer {
+	var enums []*EnumContainer
+	for _, enumType := range pc.pb.GetEnumType() {
+		enums = append(enums, parseEnum(pc.r, pc.pb.GetPackage(), enumType))
+	}
+	return enums
 }
 
 func (pc *protoContainer) populateMessageFields() {

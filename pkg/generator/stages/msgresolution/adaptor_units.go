@@ -1,12 +1,3 @@
-//
-//  This source file is part of the carousell/aggproto open source project
-//
-//  Copyright © 2021 Carousell and the project authors
-//  Licensed under Apache License v2.0
-//
-//  See https://github.com/carousell/aggproto/blob/master/LICENSE for license information
-//  See https://github.com/carousell/aggproto/graphs/contributors for the list of project authors
-//
 package msgresolution
 
 import (
@@ -117,13 +108,13 @@ func (n *nestedAdaptorUnit) printAsAdaptorCode(p printer.Printer, referenceName 
 		if err != nil {
 			return err
 		}
-		for j := 1; j < len(rss); j += 1 {
-			p.P("if ", rss[0], " != ", rss[j], " {")
-			p.Tab()
-			p.P("return nil, errors.Errorf(\"assertion failed %s != %s\", ", rss[0], ", ", rss[j], ")")
-			p.UnTab()
-			p.P("}")
-		}
+			for j := 1; j < len(rss); j += 1 {
+				p.P("if ", rss[0], " != ", rss[j], " {")
+				p.Tab()
+				p.P("return nil, errors.Errorf(\"assertion failed %s != %s\", ", rss[0], ", ", rss[j], ")")
+				p.UnTab()
+				p.P("}")
+			}
 		p.P(referenceName, ".", fieldName, " = make([]*", parentName, "_", fieldName, "Gen, ", rss[0], ")")
 		i := getNextRepeatedIdx('i', repeatedStringIdxRef)
 		p.P("for ", i, " := 0; ", i, " < ", rss[0], "; ", i, "++ {")

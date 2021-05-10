@@ -5,10 +5,26 @@ option go_package = "github.com/carousell/aggproto/examples/goOut/listing";
 
 
 message Listing {
+    message T {
+        string test = 1;
+    }
+    enum Test {
+        ZERO = 0;
+        ONE = 1;
+    }
     string id = 1;
     string title = 2;
     string description = 3;
     string media_id = 4;
+    Status status = 5;
+    Test test = 6;
+    T t = 7;
+}
+
+enum Status {
+    UNKNOWN = 0;
+    LISTED = 1;
+    SOLD = 2;
 }
 
 message BulkGetListingsRequest {
