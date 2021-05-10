@@ -32,7 +32,7 @@ func New() ComplexUsecaseServiceServer {
 
 
 func (s *complexUsecaseSvc) InvokeComplexUsecase(ctx context.Context, req *ComplexUsecaseRequest) (*ComplexUsecaseResponse, error){
-	getUserWalletRequest, bulkGetMediaRequest, bulkGetListingsRequest, bulkGetListingCommentsRequest := transformComplexUsecaseRequest(req)
+	bulkGetListingsRequest, bulkGetListingCommentsRequest, getUserWalletRequest, bulkGetMediaRequest := transformComplexUsecaseRequest(req)
 	bulkGetListingsResponse, err := s.bulkGetListingsClient.bulkGetListings(ctx, bulkGetListingsRequest)
 	if err != nil {
 		return nil, err
