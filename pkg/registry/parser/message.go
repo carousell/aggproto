@@ -21,6 +21,7 @@ type MessageContainer struct {
 	PackageName        string
 	MessageParent      *MessageContainer
 	MessageDefinitions []*MessageContainer
+	EnumDefinitions    []*EnumContainer
 	MessageFields      []*MessageField
 }
 
@@ -75,9 +76,23 @@ func parseMessage(r registry.Registry, packageName string, msgType *descriptorpb
 			definitions = append(definitions, subMsg)
 		}
 	}
+
+	var enumDefinition []*EnumContainer
+	for _, en := range msgType.EnumType {
+		subEnum := parseEnum(r, packageName, en)
+		subEnum.EnumParent = msg
+		if subEnum != nil {
+			// Should we do a add enum here to registry so that we do not need to traverse all the messages
+			// when finding the enum type ?? @vinay
+			enumDefinition = append(enumDefinition, subEnum)
+		}
+	}
+
+	msg.EnumDefinitions = enumDefinition
 	msg.MessageDefinitions = definitions
 	return msg
 }
+
 func populateMessageField(r registry.Registry, packageName string, msgType *descriptorpb.DescriptorProto) {
 	msgName := fmt.Sprintf("%s.%s", packageName, msgType.GetName())
 	msgs := r.ListMessages(registry.LMOWithFullName(msgName))

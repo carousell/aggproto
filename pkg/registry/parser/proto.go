@@ -27,6 +27,14 @@ func (pc *protoContainer) messages() []*MessageContainer {
 	return msgs
 }
 
+func (pc *protoContainer) enums() []*EnumContainer {
+	var enums []*EnumContainer
+	for _, enumType := range pc.pb.GetEnumType() {
+		enums = append(enums, parseEnum(pc.r, pc.pb.GetPackage(), enumType))
+	}
+	return enums
+}
+
 func (pc *protoContainer) populateMessageFields() {
 	for _, msgType := range pc.pb.GetMessageType() {
 		populateMessageField(pc.r, pc.pb.GetPackage(), msgType)

@@ -1,16 +1,8 @@
-//
-//  This source file is part of the carousell/aggproto open source project
-//
-//  Copyright © 2021 Carousell and the project authors
-//  Licensed under Apache License v2.0
-//
-//  See https://github.com/carousell/aggproto/blob/master/LICENSE for license information
-//  See https://github.com/carousell/aggproto/graphs/contributors for the list of project authors
-//
 package parser
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/carousell/aggproto/pkg/registry"
@@ -22,6 +14,7 @@ type MessageField struct {
 	FieldName        string
 	FieldMessageType registry.Message
 	FieldContext     registry.Message
+	FieldEnumType    registry.Enum
 	RepeatedField    bool
 }
 
@@ -35,6 +28,10 @@ func (m *MessageField) Name() string {
 
 func (m *MessageField) Message() registry.Message {
 	return m.FieldMessageType
+}
+
+func (m *MessageField) Enum() registry.Enum {
+	return m.FieldEnumType
 }
 
 func (m *MessageField) Context() registry.Message {
@@ -72,6 +69,19 @@ func parseField(r registry.Registry, msgContext *MessageContainer, fieldDescript
 		field.FieldType = registry.FieldTypeBool
 	case descriptorpb.FieldDescriptorProto_TYPE_INT64:
 		field.FieldType = registry.FieldTypeInt64
+	case descriptorpb.FieldDescriptorProto_TYPE_ENUM:
+		tn := fieldDescriptorProto.GetTypeName()
+		if strings.HasPrefix(tn, ".") {
+			tn = strings.Replace(tn, ".", "", 1)
+		}
+		enums := r.ListEnums(registry.LEOWithFullName(tn))
+		if len(enums) != 1 {
+			log.Fatal("msg", "enum_not_found", "name")
+		}
+
+		field.FieldEnumType = enums[0]
+		field.FieldType = registry.FieldTypeEnum
+
 	default:
 		// TODO
 		panic("unhandled type " + fieldDescriptorProto.GetType().String())

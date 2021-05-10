@@ -53,6 +53,7 @@ type Field interface {
 	Message() Message
 	Context() Message
 	Repeated() bool
+	Enum() Enum
 }
 type UnaryOperation interface {
 	Input() Message
@@ -67,11 +68,19 @@ type Service interface {
 	Name() string
 }
 
+type Enum interface {
+	Name() string
+	FullName() string
+}
+
 type ListMessageOption func(options ListMessageOptions) ListMessageOptions
+
+type ListEnumOption func(options ListEnumOptions) ListEnumOptions
 
 type ListServiceOption func(options ListServiceOptions) ListServiceOptions
 
 type Registry interface {
 	ListMessages(...ListMessageOption) []Message
 	ListOperations(...ListServiceOption) []UnaryOperation
+	ListEnums(opts ...ListEnumOption) []Enum
 }
