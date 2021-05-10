@@ -3,10 +3,10 @@ package complex_v1
 import (
 	"github.com/pkg/errors"
 	
-	"github.com/carousell/aggproto/examples/goOut/listing"
-	"github.com/carousell/aggproto/examples/goOut/media"
 	"github.com/carousell/aggproto/examples/goOut/listing_comments"
 	"github.com/carousell/aggproto/examples/goOut/wallet"
+	"github.com/carousell/aggproto/examples/goOut/listing"
+	"github.com/carousell/aggproto/examples/goOut/media"
 )
 
 func adaptComplexUsecaseResponse(bulkGetListingsResponse *listing.BulkGetListingsResponse, bulkGetMediaResponse *media.BulkGetMediaResponse, bulkGetListingCommentsResponse *listing_comments.BulkGetListingCommentsResponse, getUserWalletResponse *wallet.GetUserWalletResponse) (*ComplexUsecaseResponse, error){

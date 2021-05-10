@@ -3,10 +3,10 @@ package complex_v1
 import (
 	"context"
 	
-	"github.com/carousell/aggproto/examples/goOut/listing"
 	"github.com/carousell/aggproto/examples/goOut/media"
 	"github.com/carousell/aggproto/examples/goOut/listing_comments"
 	"github.com/carousell/aggproto/examples/goOut/wallet"
+	"github.com/carousell/aggproto/examples/goOut/listing"
 )
 
 type complexUsecaseSvc struct {
@@ -17,7 +17,7 @@ type complexUsecaseSvc struct {
 	getUserWalletClient *getUserWalletClient
 }
 
-func New(listings listing.ListingsClient, mediaService media.MediaServiceClient, listingComments listing_comments.ListingCommentsClient, wallet wallet.WalletClient) ComplexUsecaseServiceServer {
+func New(mediaService media.MediaServiceClient, listingComments listing_comments.ListingCommentsClient, wallet wallet.WalletClient, listings listing.ListingsClient) ComplexUsecaseServiceServer {
 	return &complexUsecaseSvc{
 		bulkGetListingsClient: &bulkGetListingsClient{listings},
 		bulkGetMediaClient: &bulkGetMediaClient{mediaService},
