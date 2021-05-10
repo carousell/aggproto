@@ -1,11 +1,14 @@
 package rep_inferred_input_v1
 
+
 import (
 	"github.com/pkg/errors"
+
 	
 	"github.com/carousell/aggproto/examples/goOut/listing"
 	"github.com/carousell/aggproto/examples/goOut/media"
 )
+
 
 func adaptMaskedListingsWMediaResponse(bulkGetListingsResponse *listing.BulkGetListingsResponse, bulkGetMediaResponse *media.BulkGetMediaResponse) (*MaskedListingsWMediaResponse, error){
 	resp := &MaskedListingsWMediaResponse{}

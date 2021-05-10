@@ -1,11 +1,14 @@
 package rep_inferred_input_v1
 
+
 import (
 	"context"
+
 	
-	"github.com/carousell/aggproto/examples/goOut/media"
 	"github.com/carousell/aggproto/examples/goOut/listing"
+	"github.com/carousell/aggproto/examples/goOut/media"
 )
+
 
 type maskedListingsWMediaSvc struct {
 	UnimplementedMaskedListingsWMediaServiceServer
@@ -13,12 +16,14 @@ type maskedListingsWMediaSvc struct {
 	bulkGetMediaClient *bulkGetMediaClient
 }
 
-func New(listings listing.ListingsClient, mediaService media.MediaServiceClient) MaskedListingsWMediaServiceServer {
+
+func New() MaskedListingsWMediaServiceServer {
 	return &maskedListingsWMediaSvc{
 		bulkGetListingsClient: &bulkGetListingsClient{listings},
 		bulkGetMediaClient: &bulkGetMediaClient{mediaService},
 	}
 }
+
 
 func (s *maskedListingsWMediaSvc) InvokeMaskedListingsWMedia(ctx context.Context, req *MaskedListingsWMediaRequest) (*MaskedListingsWMediaResponse, error){
 	bulkGetMediaRequest, bulkGetListingsRequest := transformMaskedListingsWMediaRequest(req)
@@ -35,6 +40,7 @@ func (s *maskedListingsWMediaSvc) InvokeMaskedListingsWMedia(ctx context.Context
 	if err != nil {
 		return nil, err
 	}
+
 	
 	return resp, nil
 }

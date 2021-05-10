@@ -11,6 +11,7 @@ package orchestrator
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/carousell/aggproto/pkg/dsl"
@@ -119,13 +120,17 @@ func (o *orchestrator) PrintCode(factory printer.Factory) error {
 
 func getClientDependencies(stages []stage.Stage) []string {
 	deps := map[string]struct{}{}
+	var clientDeps []string
 	for _, s := range stages {
 		if opCtx, ok := s.(opresolution.OperationContext); ok {
-			deps[opCtx.ClientDependency()] = struct{}{}
+			if _, ok := deps[opCtx.ClientDependency()]; ok {
+				deps[opCtx.ClientDependency()] = struct{}{}
+				clientDeps = append(clientDeps, opCtx.ClientDependency())
+			}
 		}
 	}
 	var ret []string
-	for dep, _ := range deps {
+	for _, dep := range clientDeps {
 		ret = append(ret, dep)
 	}
 	return ret
@@ -133,16 +138,21 @@ func getClientDependencies(stages []stage.Stage) []string {
 
 func printImports(p printer.Printer, stages []stage.Stage) {
 	uniqueImports := map[string]struct{}{}
+	var importPackages []string
 	for _, s := range stages {
 		if opCtx, ok := s.(opresolution.OperationContext); ok {
-			uniqueImports[opCtx.RequiredImport()] = struct{}{}
+			if _, ok := uniqueImports[opCtx.RequiredImport()]; !ok {
+				uniqueImports[opCtx.RequiredImport()] = struct{}{}
+				importPackages = append(importPackages, opCtx.RequiredImport())
+			}
 		}
 	}
+	sort.Strings(importPackages)
 	p.P("import (")
 	p.Tab()
 	p.P("\"context\"")
 	p.P()
-	for imp, _ := range uniqueImports {
+	for _, imp := range importPackages {
 		p.P("\"", imp, "\"")
 	}
 	p.UnTab()

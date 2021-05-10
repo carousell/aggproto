@@ -94,6 +94,7 @@ func filterEmpty(units []argUnit) []argUnit {
 }
 
 func mergeArgUnits(units []argUnit) ([]argUnit, error) {
+	var ret []argUnit
 	naus := map[string]*nestedArgUnit{}
 	for _, au := range units {
 		if nau, ok := au.(*nestedArgUnit); ok {
@@ -104,14 +105,11 @@ func mergeArgUnits(units []argUnit) ([]argUnit, error) {
 				}
 			} else {
 				naus[nau.fieldName] = nau
+				ret = append(ret, nau)
 			}
 		} else {
 			//todo
 		}
-	}
-	var ret []argUnit
-	for _, au := range naus {
-		ret = append(ret, au)
 	}
 	return ret, nil
 }

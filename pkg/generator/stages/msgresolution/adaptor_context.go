@@ -11,6 +11,7 @@ package msgresolution
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/carousell/aggproto/pkg/dsl"
@@ -57,24 +58,15 @@ func printTopLevelDependencies(deps [][]fieldMessageDependency) string {
 	return strings.Join(params, ", ")
 }
 
-func prepareDependencies(p printer.Printer, deps [][]fieldMessageDependency) {
-	doneDeps := map[string]struct{}{}
-	for _, dep := range deps {
-		for i := 0; i < len(dep)-1; i += 1 {
-			key := fmt.Sprintf("%s_%s", dep[i+1].fieldName, dep[i].fieldName)
-			if _, ok := doneDeps[key]; ok {
-				continue
-			}
-			p.P(strcase.ToLowerCamel(dep[i+1].fieldName), " := ", strcase.ToLowerCamel(dep[i].fieldName), ".", strcase.ToCamel(dep[i+1].fieldName))
-			doneDeps[key] = struct{}{}
-		}
-	}
-}
 func prepareImports(p printer.Printer, meta dsl.Meta, deps [][]fieldMessageDependency, units []adaptorUnit) {
 	packages := map[string]struct{}{}
+	var importPackages []string
 	for _, dep := range deps {
 		for _, d := range dep {
-			packages[d.message.Package()] = struct{}{}
+			if _,ok:=packages[d.message.Package()];!ok{
+				packages[d.message.Package()] = struct{}{}
+				importPackages = append(importPackages, d.message.Package())
+			}
 		}
 	}
 	importErrors := false
@@ -84,7 +76,8 @@ func prepareImports(p printer.Printer, meta dsl.Meta, deps [][]fieldMessageDepen
 			importErrors = true
 		}
 	}
-	if len(packages) > 0 {
+	if len(importPackages) > 0 {
+		sort.Strings(importPackages)
 		p.P()
 		p.P("import (")
 		p.Tab()
@@ -92,7 +85,7 @@ func prepareImports(p printer.Printer, meta dsl.Meta, deps [][]fieldMessageDepen
 			p.P("\"github.com/pkg/errors\"")
 			p.P()
 		}
-		for pkg, _ := range packages {
+		for _, pkg := range importPackages {
 			p.P("\"", meta.GoPackage, "/", pkg, "\"")
 		}
 		p.UnTab()

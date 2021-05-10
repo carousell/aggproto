@@ -1,9 +1,11 @@
 package union_mask_v1
 
+
 import (
 	"github.com/carousell/aggproto/examples/goOut/listing"
 	"github.com/carousell/aggproto/examples/goOut/wallet"
 )
+
 
 func adaptMaskedListingWWalletResponse(getListingResponse *listing.GetListingResponse, getUserWalletResponse *wallet.GetUserWalletResponse) (*MaskedListingWWalletResponse, error){
 	resp := &MaskedListingWWalletResponse{}

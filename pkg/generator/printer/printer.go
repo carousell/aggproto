@@ -41,6 +41,9 @@ func (p *printer) UnTab() {
 }
 
 func (p *printer) P(v ...interface{}) {
+	if len(v) == 0 {
+		p.WriteByte('\n')
+	}
 	p.WriteString(p.indent)
 	for _, atom := range v {
 		p.writeAtom(atom)

@@ -12,6 +12,7 @@ package inresolution
 import (
 	"bytes"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/carousell/aggproto/pkg/dsl"
@@ -95,15 +96,20 @@ func (i *InputContext) PrintCode(printerFactory printer.Factory) error {
 
 func prepareImports(p printer.Printer, meta dsl.Meta, argUnits []argUnit) {
 	packages := map[string]struct{}{}
+	var importPackages []string
 	for _, au := range argUnits {
 		for _, msg := range au.produces() {
-			packages[msg.Package()] = struct{}{}
+			if _, ok := packages[msg.Package()]; !ok {
+				importPackages = append(importPackages, msg.Package())
+				packages[msg.Package()] = struct{}{}
+			}
 		}
 	}
-	if len(packages) > 0 {
+	if len(importPackages) > 0 {
+		sort.Strings(importPackages)
 		p.P("import (")
 		p.Tab()
-		for pkg, _ := range packages {
+		for _, pkg := range importPackages {
 			p.P("\"", meta.GoPackage, "/", pkg, "\"")
 		}
 		p.UnTab()
