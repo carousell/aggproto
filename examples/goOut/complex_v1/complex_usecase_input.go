@@ -2,10 +2,10 @@ package complex_v1
 
 
 import (
-	"github.com/carousell/aggproto/examples/goOut/0"
-	"github.com/carousell/aggproto/examples/goOut/1"
-	"github.com/carousell/aggproto/examples/goOut/2"
-	"github.com/carousell/aggproto/examples/goOut/3"
+	"github.com/carousell/aggproto/examples/goOut/listing"
+	"github.com/carousell/aggproto/examples/goOut/listing_comments"
+	"github.com/carousell/aggproto/examples/goOut/media"
+	"github.com/carousell/aggproto/examples/goOut/wallet"
 )
 
 

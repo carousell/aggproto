@@ -17,7 +17,7 @@ type maskedListingsWMediaSvc struct {
 }
 
 
-func New(listings listing.ListingsClient, mediaService media.MediaServiceClient) MaskedListingsWMediaServiceServer {
+func New() MaskedListingsWMediaServiceServer {
 	return &maskedListingsWMediaSvc{
 		bulkGetListingsClient: &bulkGetListingsClient{listings},
 		bulkGetMediaClient: &bulkGetMediaClient{mediaService},

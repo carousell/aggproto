@@ -15,7 +15,7 @@ type maskedListingSvc struct {
 }
 
 
-func New(listings listing.ListingsClient) MaskedListingServiceServer {
+func New() MaskedListingServiceServer {
 	return &maskedListingSvc{
 		getListingClient: &getListingClient{listings},
 	}

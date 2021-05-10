@@ -6,8 +6,8 @@ import (
 
 	
 	"github.com/carousell/aggproto/examples/goOut/listing"
-	"github.com/carousell/aggproto/examples/goOut/media"
 	"github.com/carousell/aggproto/examples/goOut/listing_comments"
+	"github.com/carousell/aggproto/examples/goOut/media"
 	"github.com/carousell/aggproto/examples/goOut/wallet"
 )
 
@@ -21,7 +21,7 @@ type complexUsecaseSvc struct {
 }
 
 
-func New(mediaService media.MediaServiceClient, listingComments listing_comments.ListingCommentsClient, wallet wallet.WalletClient, listings listing.ListingsClient) ComplexUsecaseServiceServer {
+func New() ComplexUsecaseServiceServer {
 	return &complexUsecaseSvc{
 		bulkGetListingsClient: &bulkGetListingsClient{listings},
 		bulkGetMediaClient: &bulkGetMediaClient{mediaService},

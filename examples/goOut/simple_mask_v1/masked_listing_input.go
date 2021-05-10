@@ -2,7 +2,7 @@ package simple_mask_v1
 
 
 import (
-	"github.com/carousell/aggproto/examples/goOut/0"
+	"github.com/carousell/aggproto/examples/goOut/listing"
 )
 
 

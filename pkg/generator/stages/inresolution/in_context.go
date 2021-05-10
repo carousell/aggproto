@@ -109,7 +109,7 @@ func prepareImports(p printer.Printer, meta dsl.Meta, argUnits []argUnit) {
 		sort.Strings(importPackages)
 		p.P("import (")
 		p.Tab()
-		for pkg, _ := range importPackages {
+		for _, pkg := range importPackages {
 			p.P("\"", meta.GoPackage, "/", pkg, "\"")
 		}
 		p.UnTab()

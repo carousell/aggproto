@@ -120,13 +120,17 @@ func (o *orchestrator) PrintCode(factory printer.Factory) error {
 
 func getClientDependencies(stages []stage.Stage) []string {
 	deps := map[string]struct{}{}
+	var clientDeps []string
 	for _, s := range stages {
 		if opCtx, ok := s.(opresolution.OperationContext); ok {
-			deps[opCtx.ClientDependency()] = struct{}{}
+			if _, ok := deps[opCtx.ClientDependency()]; ok {
+				deps[opCtx.ClientDependency()] = struct{}{}
+				clientDeps = append(clientDeps, opCtx.ClientDependency())
+			}
 		}
 	}
 	var ret []string
-	for dep, _ := range deps {
+	for _, dep := range clientDeps {
 		ret = append(ret, dep)
 	}
 	return ret
@@ -148,7 +152,7 @@ func printImports(p printer.Printer, stages []stage.Stage) {
 	p.Tab()
 	p.P("\"context\"")
 	p.P()
-	for imp, _ := range uniqueImports {
+	for _, imp := range importPackages {
 		p.P("\"", imp, "\"")
 	}
 	p.UnTab()
