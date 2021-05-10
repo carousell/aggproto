@@ -6,6 +6,6 @@ import (
 
 func transformMaskedListingWMediaRequest(req *MaskedListingWMediaRequest) *listing.GetListingRequest {
 	getListingRequest := &listing.GetListingRequest{}
-	getListingRequest.ListingId = req.GetListing.Id
+	getListingRequest.ListingId = req.GetListingRequest.ListingId
 	return getListingRequest
 }

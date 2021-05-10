@@ -11,8 +11,7 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-// Requires gRPC-Go v1.32.0 or later.
-const _ = grpc.SupportPackageIsVersion7
+const _ = grpc.SupportPackageIsVersion6
 
 // WalletClient is the client API for Wallet service.
 //
@@ -50,20 +49,13 @@ type WalletServer interface {
 type UnimplementedWalletServer struct {
 }
 
-func (UnimplementedWalletServer) GetUserWallet(context.Context, *GetUserWalletRequest) (*GetUserWalletResponse, error) {
+func (*UnimplementedWalletServer) GetUserWallet(context.Context, *GetUserWalletRequest) (*GetUserWalletResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserWallet not implemented")
 }
-func (UnimplementedWalletServer) mustEmbedUnimplementedWalletServer() {}
+func (*UnimplementedWalletServer) mustEmbedUnimplementedWalletServer() {}
 
-// UnsafeWalletServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to WalletServer will
-// result in compilation errors.
-type UnsafeWalletServer interface {
-	mustEmbedUnimplementedWalletServer()
-}
-
-func RegisterWalletServer(s grpc.ServiceRegistrar, srv WalletServer) {
-	s.RegisterService(&Wallet_ServiceDesc, srv)
+func RegisterWalletServer(s *grpc.Server, srv WalletServer) {
+	s.RegisterService(&_Wallet_serviceDesc, srv)
 }
 
 func _Wallet_GetUserWallet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -84,10 +76,7 @@ func _Wallet_GetUserWallet_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
-// Wallet_ServiceDesc is the grpc.ServiceDesc for Wallet service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var Wallet_ServiceDesc = grpc.ServiceDesc{
+var _Wallet_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "wallet.Wallet",
 	HandlerType: (*WalletServer)(nil),
 	Methods: []grpc.MethodDesc{

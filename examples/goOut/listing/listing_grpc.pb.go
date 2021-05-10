@@ -11,8 +11,7 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-// Requires gRPC-Go v1.32.0 or later.
-const _ = grpc.SupportPackageIsVersion7
+const _ = grpc.SupportPackageIsVersion6
 
 // ListingsClient is the client API for Listings service.
 //
@@ -61,23 +60,16 @@ type ListingsServer interface {
 type UnimplementedListingsServer struct {
 }
 
-func (UnimplementedListingsServer) BulkGetListings(context.Context, *BulkGetListingsRequest) (*BulkGetListingsResponse, error) {
+func (*UnimplementedListingsServer) BulkGetListings(context.Context, *BulkGetListingsRequest) (*BulkGetListingsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BulkGetListings not implemented")
 }
-func (UnimplementedListingsServer) GetListing(context.Context, *GetListingRequest) (*GetListingResponse, error) {
+func (*UnimplementedListingsServer) GetListing(context.Context, *GetListingRequest) (*GetListingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetListing not implemented")
 }
-func (UnimplementedListingsServer) mustEmbedUnimplementedListingsServer() {}
+func (*UnimplementedListingsServer) mustEmbedUnimplementedListingsServer() {}
 
-// UnsafeListingsServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to ListingsServer will
-// result in compilation errors.
-type UnsafeListingsServer interface {
-	mustEmbedUnimplementedListingsServer()
-}
-
-func RegisterListingsServer(s grpc.ServiceRegistrar, srv ListingsServer) {
-	s.RegisterService(&Listings_ServiceDesc, srv)
+func RegisterListingsServer(s *grpc.Server, srv ListingsServer) {
+	s.RegisterService(&_Listings_serviceDesc, srv)
 }
 
 func _Listings_BulkGetListings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -116,10 +108,7 @@ func _Listings_GetListing_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-// Listings_ServiceDesc is the grpc.ServiceDesc for Listings service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var Listings_ServiceDesc = grpc.ServiceDesc{
+var _Listings_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "listing.Listings",
 	HandlerType: (*ListingsServer)(nil),
 	Methods: []grpc.MethodDesc{
