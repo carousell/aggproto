@@ -32,7 +32,7 @@ func New(mediaService media.MediaServiceClient, listingComments listing_comments
 
 
 func (s *complexUsecaseSvc) InvokeComplexUsecase(ctx context.Context, req *ComplexUsecaseRequest) (*ComplexUsecaseResponse, error){
-	bulkGetListingsRequest, bulkGetListingCommentsRequest, getUserWalletRequest, bulkGetMediaRequest := transformComplexUsecaseRequest(req)
+	getUserWalletRequest, bulkGetMediaRequest, bulkGetListingsRequest, bulkGetListingCommentsRequest := transformComplexUsecaseRequest(req)
 	bulkGetListingsResponse, err := s.bulkGetListingsClient.bulkGetListings(ctx, bulkGetListingsRequest)
 	if err != nil {
 		return nil, err

@@ -5,21 +5,21 @@ service ComplexUsecaseService {
 	rpc InvokeComplexUsecase (ComplexUsecaseRequest) returns (ComplexUsecaseResponse);
 }
 message ComplexUsecaseRequest {
-	message GetListingsGen {
-		message ListingIdsGen {
-			string ids = 1;
-		}
-		repeated ListingIdsGen listing_ids = 1;
-	}
 	message UserInfoGen {
 		string id = 1;
 	}
 	message MetaGen {
 		repeated string media_type = 1;
 	}
-	GetListingsGen get_listings = 1;
-	UserInfoGen user_info = 2;
-	MetaGen meta = 3;
+	message GetListingsGen {
+		message ListingIdsGen {
+			string ids = 1;
+		}
+		repeated ListingIdsGen listing_ids = 1;
+	}
+	UserInfoGen user_info = 1;
+	MetaGen meta = 2;
+	GetListingsGen get_listings = 3;
 }
 message ComplexUsecaseResponse {
 	message ListingsGen {

@@ -5,8 +5,8 @@ import (
 	"github.com/pkg/errors"
 
 	
-	"github.com/carousell/aggproto/examples/goOut/media"
 	"github.com/carousell/aggproto/examples/goOut/listing"
+	"github.com/carousell/aggproto/examples/goOut/media"
 )
 
 

@@ -7,10 +7,10 @@ import (
 )
 
 
-func transformMaskedListingWWalletRequest(req *MaskedListingWWalletRequest) (*listing.GetListingRequest, *wallet.GetUserWalletRequest) {
-	getListingRequest := &listing.GetListingRequest{}
+func transformMaskedListingWWalletRequest(req *MaskedListingWWalletRequest) (*wallet.GetUserWalletRequest, *listing.GetListingRequest) {
 	getUserWalletRequest := &wallet.GetUserWalletRequest{}
-	getListingRequest.ListingId = req.GetListingRequest.ListingId
+	getListingRequest := &listing.GetListingRequest{}
 	getUserWalletRequest.UserId = req.GetUserWalletRequest.UserId
-	return getListingRequest, getUserWalletRequest
+	getListingRequest.ListingId = req.GetListingRequest.ListingId
+	return getUserWalletRequest, getListingRequest
 }

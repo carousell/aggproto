@@ -26,7 +26,7 @@ func New(listings listing.ListingsClient, wallet wallet.WalletClient) MaskedList
 
 
 func (s *maskedListingWWalletSvc) InvokeMaskedListingWWallet(ctx context.Context, req *MaskedListingWWalletRequest) (*MaskedListingWWalletResponse, error){
-	getListingRequest, getUserWalletRequest := transformMaskedListingWWalletRequest(req)
+	getUserWalletRequest, getListingRequest := transformMaskedListingWWalletRequest(req)
 	getListingResponse, err := s.getListingClient.getListing(ctx, getListingRequest)
 	if err != nil {
 		return nil, err

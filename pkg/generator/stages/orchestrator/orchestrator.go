@@ -11,6 +11,7 @@ package orchestrator
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/carousell/aggproto/pkg/dsl"
@@ -133,11 +134,16 @@ func getClientDependencies(stages []stage.Stage) []string {
 
 func printImports(p printer.Printer, stages []stage.Stage) {
 	uniqueImports := map[string]struct{}{}
+	var importPackages []string
 	for _, s := range stages {
 		if opCtx, ok := s.(opresolution.OperationContext); ok {
-			uniqueImports[opCtx.RequiredImport()] = struct{}{}
+			if _, ok := uniqueImports[opCtx.RequiredImport()]; !ok {
+				uniqueImports[opCtx.RequiredImport()] = struct{}{}
+				importPackages = append(importPackages, opCtx.RequiredImport())
+			}
 		}
 	}
+	sort.Strings(importPackages)
 	p.P("import (")
 	p.Tab()
 	p.P("\"context\"")
